@@ -37,9 +37,8 @@ import (
 	utilversion "k8s.io/apiserver/pkg/util/version"
 	"k8s.io/component-base/featuregate"
 	baseversion "k8s.io/component-base/version"
-	"k8s.io/sample-apiserver/pkg/admission/plugin/banflunder"
 	"k8s.io/sample-apiserver/pkg/admission/wardleinitializer"
-	"k8s.io/sample-apiserver/pkg/apis/wardle/v1alpha1"
+	"k8s.io/sample-apiserver/pkg/apis/wardle/v1beta1"
 	"k8s.io/sample-apiserver/pkg/apiserver"
 	clientset "k8s.io/sample-apiserver/pkg/generated/clientset/versioned"
 	informers "k8s.io/sample-apiserver/pkg/generated/informers/externalversions"
@@ -79,13 +78,13 @@ func NewWardleServerOptions(out, errOut io.Writer) *WardleServerOptions {
 	o := &WardleServerOptions{
 		RecommendedOptions: genericoptions.NewRecommendedOptions(
 			defaultEtcdPathPrefix,
-			apiserver.Codecs.LegacyCodec(v1alpha1.SchemeGroupVersion),
+			apiserver.Codecs.LegacyCodec(v1beta1.SchemeGroupVersion),
 		),
 
 		StdOut: out,
 		StdErr: errOut,
 	}
-	o.RecommendedOptions.Etcd.StorageConfig.EncodeVersioner = runtime.NewMultiGroupVersioner(v1alpha1.SchemeGroupVersion, schema.GroupKind{Group: v1alpha1.GroupName})
+	o.RecommendedOptions.Etcd.StorageConfig.EncodeVersioner = runtime.NewMultiGroupVersioner(v1beta1.SchemeGroupVersion, schema.GroupKind{Group: v1beta1.GroupName})
 	return o
 }
 
@@ -129,7 +128,7 @@ func NewCommandStartWardleServer(ctx context.Context, defaults *WardleServerOpti
 	// - The minimum compatibility version specifies the minimum version that the component remains compatible with.
 	//
 	// Refer to KEP-4330 for more details: https://github.com/kubernetes/enhancements/blob/master/keps/sig-architecture/4330-compatibility-versions
-	defaultWardleVersion := "1.2"
+	defaultWardleVersion := "1.1"
 	// Register the "Wardle" component with the global component registry,
 	// associating it with its effective version and feature gate configuration.
 	// Will skip if the component has been registered, like in the integration test.
@@ -139,13 +138,7 @@ func NewCommandStartWardleServer(ctx context.Context, defaults *WardleServerOpti
 
 	// Add versioned feature specifications for the "BanFlunder" feature.
 	// These specifications, together with the effective version, determine if the feature is enabled.
-	utilruntime.Must(wardleFeatureGate.AddVersioned(map[featuregate.Feature]featuregate.VersionedSpecs{
-		"BanFlunder": {
-			{Version: version.MustParse("1.2"), Default: true, PreRelease: featuregate.GA, LockToDefault: true},
-			{Version: version.MustParse("1.1"), Default: true, PreRelease: featuregate.Beta},
-			{Version: version.MustParse("1.0"), Default: false, PreRelease: featuregate.Alpha},
-		},
-	}))
+	utilruntime.Must(wardleFeatureGate.AddVersioned(map[featuregate.Feature]featuregate.VersionedSpecs{}))
 
 	// Register the default kube component if not already present in the global registry.
 	_, _ = utilversion.DefaultComponentGlobalsRegistry.ComponentGlobalsOrRegister(utilversion.DefaultKubeComponent,
@@ -170,13 +163,6 @@ func (o WardleServerOptions) Validate(args []string) error {
 
 // Complete fills in fields required to have valid data
 func (o *WardleServerOptions) Complete() error {
-	if utilversion.DefaultComponentGlobalsRegistry.FeatureGateFor(apiserver.WardleComponentName).Enabled("BanFlunder") {
-		// register admission plugins
-		banflunder.Register(o.RecommendedOptions.Admission.Plugins)
-
-		// add admission plugins to the RecommendedPluginOrder
-		o.RecommendedOptions.Admission.RecommendedPluginOrder = append(o.RecommendedOptions.Admission.RecommendedPluginOrder, "BanFlunder")
-	}
 	return nil
 }
 

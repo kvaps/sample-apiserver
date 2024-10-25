@@ -22,10 +22,8 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	testing "k8s.io/client-go/testing"
-	v1alpha1 "k8s.io/sample-apiserver/pkg/apis/wardle/v1alpha1"
 	v1beta1 "k8s.io/sample-apiserver/pkg/apis/wardle/v1beta1"
 	internal "k8s.io/sample-apiserver/pkg/generated/applyconfiguration/internal"
-	wardlev1alpha1 "k8s.io/sample-apiserver/pkg/generated/applyconfiguration/wardle/v1alpha1"
 	wardlev1beta1 "k8s.io/sample-apiserver/pkg/generated/applyconfiguration/wardle/v1beta1"
 )
 
@@ -33,15 +31,7 @@ import (
 // apply configuration type exists for the given GroupVersionKind.
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
-	// Group=wardle.example.com, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithKind("Fischer"):
-		return &wardlev1alpha1.FischerApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("Flunder"):
-		return &wardlev1alpha1.FlunderApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("FlunderSpec"):
-		return &wardlev1alpha1.FlunderSpecApplyConfiguration{}
-
-		// Group=wardle.example.com, Version=v1beta1
+	// Group=wardle.example.com, Version=v1beta1
 	case v1beta1.SchemeGroupVersion.WithKind("Flunder"):
 		return &wardlev1beta1.FlunderApplyConfiguration{}
 	case v1beta1.SchemeGroupVersion.WithKind("FlunderSpec"):

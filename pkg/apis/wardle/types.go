@@ -63,28 +63,3 @@ type Flunder struct {
 	Spec   FlunderSpec
 	Status FlunderStatus
 }
-
-// +genclient
-// +genclient:nonNamespaced
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// Fischer is an example type with a list of disallowed Flunder.Names
-type Fischer struct {
-	metav1.TypeMeta
-	metav1.ObjectMeta
-
-	// DisallowedFlunders holds a list of Flunder.Names that are disallowed.
-	DisallowedFlunders []string
-}
-
-// +genclient:nonNamespaced
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// FischerList is a list of Fischer objects.
-type FischerList struct {
-	metav1.TypeMeta
-	metav1.ListMeta
-
-	// Items is a list of Fischers
-	Items []Fischer
-}
