@@ -31,7 +31,7 @@ type WardleV1beta1Interface interface {
 	FlundersGetter
 }
 
-// WardleV1beta1Client is used to interact with features provided by the wardle.example.com group.
+// WardleV1beta1Client is used to interact with features provided by the apps.cozystack.io group.
 type WardleV1beta1Client struct {
 	restClient rest.Interface
 }

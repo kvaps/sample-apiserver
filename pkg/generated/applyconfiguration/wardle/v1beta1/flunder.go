@@ -41,7 +41,7 @@ func Flunder(name, namespace string) *FlunderApplyConfiguration {
 	b.WithName(name)
 	b.WithNamespace(namespace)
 	b.WithKind("Flunder")
-	b.WithAPIVersion("wardle.example.com/v1beta1")
+	b.WithAPIVersion("apps.cozystack.io/v1beta1")
 	return b
 }
 

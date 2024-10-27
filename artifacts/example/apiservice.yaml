@@ -1,10 +1,10 @@
 apiVersion: apiregistration.k8s.io/v1
 kind: APIService
 metadata:
-  name: v1beta1.wardle.example.com
+  name: v1beta1.apps.cozystack.io
 spec:
   insecureSkipTLSVerify: true
-  group: wardle.example.com
+  group: apps.cozystack.io
   groupPriorityMinimum: 1000
   versionPriority: 15
   service:

@@ -31,7 +31,7 @@ import (
 // apply configuration type exists for the given GroupVersionKind.
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
-	// Group=wardle.example.com, Version=v1beta1
+	// Group=apps.cozystack.io, Version=v1beta1
 	case v1beta1.SchemeGroupVersion.WithKind("Flunder"):
 		return &wardlev1beta1.FlunderApplyConfiguration{}
 	case v1beta1.SchemeGroupVersion.WithKind("FlunderSpec"):

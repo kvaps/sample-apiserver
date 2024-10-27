@@ -46,7 +46,7 @@ import (
 	netutils "k8s.io/utils/net"
 )
 
-const defaultEtcdPathPrefix = "/registry/wardle.example.com"
+const defaultEtcdPathPrefix = "/registry/apps.cozystack.io"
 
 // WardleServerOptions contains state for master/api server
 type WardleServerOptions struct {

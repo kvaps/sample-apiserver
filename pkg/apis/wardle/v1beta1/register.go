@@ -23,7 +23,7 @@ import (
 )
 
 // GroupName holds the API group name.
-const GroupName = "wardle.example.com"
+const GroupName = "apps.cozystack.io"
 
 // SchemeGroupVersion is group version used to register these objects
 var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: "v1beta1"}
