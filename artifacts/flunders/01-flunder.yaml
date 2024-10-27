@@ -4,3 +4,5 @@ metadata:
   name: my-first-flunder
   labels:
     sample-label: "true"
+spec:
+  flunderReference: "asd"

@@ -254,9 +254,9 @@ type SharedInformerFactory interface {
 	// client.
 	InformerFor(obj runtime.Object, newFunc internalinterfaces.NewInformerFunc) cache.SharedIndexInformer
 
-	Wardle() wardle.Interface
+	Apps() wardle.Interface
 }
 
-func (f *sharedInformerFactory) Wardle() wardle.Interface {
+func (f *sharedInformerFactory) Apps() wardle.Interface {
 	return wardle.New(f, f.namespace, f.tweakListOptions)
 }

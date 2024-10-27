@@ -28,35 +28,35 @@ import (
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	testing "k8s.io/client-go/testing"
-	v1beta1 "k8s.io/sample-apiserver/pkg/apis/wardle/v1beta1"
-	wardlev1beta1 "k8s.io/sample-apiserver/pkg/generated/applyconfiguration/wardle/v1beta1"
+	v1alpha1 "k8s.io/sample-apiserver/pkg/apis/wardle/v1alpha1"
+	wardlev1alpha1 "k8s.io/sample-apiserver/pkg/generated/applyconfiguration/wardle/v1alpha1"
 )
 
 // FakeFlunders implements FlunderInterface
 type FakeFlunders struct {
-	Fake *FakeWardleV1beta1
+	Fake *FakeAppsV1alpha1
 	ns   string
 }
 
-var flundersResource = v1beta1.SchemeGroupVersion.WithResource("flunders")
+var flundersResource = v1alpha1.SchemeGroupVersion.WithResource("flunders")
 
-var flundersKind = v1beta1.SchemeGroupVersion.WithKind("Flunder")
+var flundersKind = v1alpha1.SchemeGroupVersion.WithKind("Flunder")
 
 // Get takes name of the flunder, and returns the corresponding flunder object, and an error if there is any.
-func (c *FakeFlunders) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1beta1.Flunder, err error) {
-	emptyResult := &v1beta1.Flunder{}
+func (c *FakeFlunders) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Flunder, err error) {
+	emptyResult := &v1alpha1.Flunder{}
 	obj, err := c.Fake.
 		Invokes(testing.NewGetActionWithOptions(flundersResource, c.ns, name, options), emptyResult)
 
 	if obj == nil {
 		return emptyResult, err
 	}
-	return obj.(*v1beta1.Flunder), err
+	return obj.(*v1alpha1.Flunder), err
 }
 
 // List takes label and field selectors, and returns the list of Flunders that match those selectors.
-func (c *FakeFlunders) List(ctx context.Context, opts v1.ListOptions) (result *v1beta1.FlunderList, err error) {
-	emptyResult := &v1beta1.FlunderList{}
+func (c *FakeFlunders) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.FlunderList, err error) {
+	emptyResult := &v1alpha1.FlunderList{}
 	obj, err := c.Fake.
 		Invokes(testing.NewListActionWithOptions(flundersResource, flundersKind, c.ns, opts), emptyResult)
 
@@ -68,8 +68,8 @@ func (c *FakeFlunders) List(ctx context.Context, opts v1.ListOptions) (result *v
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &v1beta1.FlunderList{ListMeta: obj.(*v1beta1.FlunderList).ListMeta}
-	for _, item := range obj.(*v1beta1.FlunderList).Items {
+	list := &v1alpha1.FlunderList{ListMeta: obj.(*v1alpha1.FlunderList).ListMeta}
+	for _, item := range obj.(*v1alpha1.FlunderList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)
 		}
@@ -85,46 +85,46 @@ func (c *FakeFlunders) Watch(ctx context.Context, opts v1.ListOptions) (watch.In
 }
 
 // Create takes the representation of a flunder and creates it.  Returns the server's representation of the flunder, and an error, if there is any.
-func (c *FakeFlunders) Create(ctx context.Context, flunder *v1beta1.Flunder, opts v1.CreateOptions) (result *v1beta1.Flunder, err error) {
-	emptyResult := &v1beta1.Flunder{}
+func (c *FakeFlunders) Create(ctx context.Context, flunder *v1alpha1.Flunder, opts v1.CreateOptions) (result *v1alpha1.Flunder, err error) {
+	emptyResult := &v1alpha1.Flunder{}
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateActionWithOptions(flundersResource, c.ns, flunder, opts), emptyResult)
 
 	if obj == nil {
 		return emptyResult, err
 	}
-	return obj.(*v1beta1.Flunder), err
+	return obj.(*v1alpha1.Flunder), err
 }
 
 // Update takes the representation of a flunder and updates it. Returns the server's representation of the flunder, and an error, if there is any.
-func (c *FakeFlunders) Update(ctx context.Context, flunder *v1beta1.Flunder, opts v1.UpdateOptions) (result *v1beta1.Flunder, err error) {
-	emptyResult := &v1beta1.Flunder{}
+func (c *FakeFlunders) Update(ctx context.Context, flunder *v1alpha1.Flunder, opts v1.UpdateOptions) (result *v1alpha1.Flunder, err error) {
+	emptyResult := &v1alpha1.Flunder{}
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateActionWithOptions(flundersResource, c.ns, flunder, opts), emptyResult)
 
 	if obj == nil {
 		return emptyResult, err
 	}
-	return obj.(*v1beta1.Flunder), err
+	return obj.(*v1alpha1.Flunder), err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeFlunders) UpdateStatus(ctx context.Context, flunder *v1beta1.Flunder, opts v1.UpdateOptions) (result *v1beta1.Flunder, err error) {
-	emptyResult := &v1beta1.Flunder{}
+func (c *FakeFlunders) UpdateStatus(ctx context.Context, flunder *v1alpha1.Flunder, opts v1.UpdateOptions) (result *v1alpha1.Flunder, err error) {
+	emptyResult := &v1alpha1.Flunder{}
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateSubresourceActionWithOptions(flundersResource, "status", c.ns, flunder, opts), emptyResult)
 
 	if obj == nil {
 		return emptyResult, err
 	}
-	return obj.(*v1beta1.Flunder), err
+	return obj.(*v1alpha1.Flunder), err
 }
 
 // Delete takes name of the flunder and deletes it. Returns an error if one occurs.
 func (c *FakeFlunders) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteActionWithOptions(flundersResource, c.ns, name, opts), &v1beta1.Flunder{})
+		Invokes(testing.NewDeleteActionWithOptions(flundersResource, c.ns, name, opts), &v1alpha1.Flunder{})
 
 	return err
 }
@@ -133,24 +133,24 @@ func (c *FakeFlunders) Delete(ctx context.Context, name string, opts v1.DeleteOp
 func (c *FakeFlunders) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	action := testing.NewDeleteCollectionActionWithOptions(flundersResource, c.ns, opts, listOpts)
 
-	_, err := c.Fake.Invokes(action, &v1beta1.FlunderList{})
+	_, err := c.Fake.Invokes(action, &v1alpha1.FlunderList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched flunder.
-func (c *FakeFlunders) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.Flunder, err error) {
-	emptyResult := &v1beta1.Flunder{}
+func (c *FakeFlunders) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Flunder, err error) {
+	emptyResult := &v1alpha1.Flunder{}
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceActionWithOptions(flundersResource, c.ns, name, pt, data, opts, subresources...), emptyResult)
 
 	if obj == nil {
 		return emptyResult, err
 	}
-	return obj.(*v1beta1.Flunder), err
+	return obj.(*v1alpha1.Flunder), err
 }
 
 // Apply takes the given apply declarative configuration, applies it and returns the applied flunder.
-func (c *FakeFlunders) Apply(ctx context.Context, flunder *wardlev1beta1.FlunderApplyConfiguration, opts v1.ApplyOptions) (result *v1beta1.Flunder, err error) {
+func (c *FakeFlunders) Apply(ctx context.Context, flunder *wardlev1alpha1.FlunderApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Flunder, err error) {
 	if flunder == nil {
 		return nil, fmt.Errorf("flunder provided to Apply must not be nil")
 	}
@@ -162,19 +162,19 @@ func (c *FakeFlunders) Apply(ctx context.Context, flunder *wardlev1beta1.Flunder
 	if name == nil {
 		return nil, fmt.Errorf("flunder.Name must be provided to Apply")
 	}
-	emptyResult := &v1beta1.Flunder{}
+	emptyResult := &v1alpha1.Flunder{}
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceActionWithOptions(flundersResource, c.ns, *name, types.ApplyPatchType, data, opts.ToPatchOptions()), emptyResult)
 
 	if obj == nil {
 		return emptyResult, err
 	}
-	return obj.(*v1beta1.Flunder), err
+	return obj.(*v1alpha1.Flunder), err
 }
 
 // ApplyStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-func (c *FakeFlunders) ApplyStatus(ctx context.Context, flunder *wardlev1beta1.FlunderApplyConfiguration, opts v1.ApplyOptions) (result *v1beta1.Flunder, err error) {
+func (c *FakeFlunders) ApplyStatus(ctx context.Context, flunder *wardlev1alpha1.FlunderApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Flunder, err error) {
 	if flunder == nil {
 		return nil, fmt.Errorf("flunder provided to Apply must not be nil")
 	}
@@ -186,12 +186,12 @@ func (c *FakeFlunders) ApplyStatus(ctx context.Context, flunder *wardlev1beta1.F
 	if name == nil {
 		return nil, fmt.Errorf("flunder.Name must be provided to Apply")
 	}
-	emptyResult := &v1beta1.Flunder{}
+	emptyResult := &v1alpha1.Flunder{}
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceActionWithOptions(flundersResource, c.ns, *name, types.ApplyPatchType, data, opts.ToPatchOptions(), "status"), emptyResult)
 
 	if obj == nil {
 		return emptyResult, err
 	}
-	return obj.(*v1beta1.Flunder), err
+	return obj.(*v1alpha1.Flunder), err
 }

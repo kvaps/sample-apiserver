@@ -23,7 +23,7 @@ import (
 
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
-	v1beta1 "k8s.io/sample-apiserver/pkg/apis/wardle/v1beta1"
+	v1alpha1 "k8s.io/sample-apiserver/pkg/apis/wardle/v1alpha1"
 )
 
 // GenericInformer is type of SharedIndexInformer which will locate and delegate to other
@@ -52,9 +52,9 @@ func (f *genericInformer) Lister() cache.GenericLister {
 // TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=apps.cozystack.io, Version=v1beta1
-	case v1beta1.SchemeGroupVersion.WithResource("flunders"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Wardle().V1beta1().Flunders().Informer()}, nil
+	// Group=apps.cozystack.io, Version=v1alpha1
+	case v1alpha1.SchemeGroupVersion.WithResource("flunders"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Apps().V1alpha1().Flunders().Informer()}, nil
 
 	}
 
