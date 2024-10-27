@@ -27,7 +27,7 @@ import (
 	"k8s.io/sample-apiserver/pkg/apis/wardle"
 	"k8s.io/sample-apiserver/pkg/apis/wardle/install"
 	wardleregistry "k8s.io/sample-apiserver/pkg/registry"
-	flunderstorage "k8s.io/sample-apiserver/pkg/registry/wardle/flunder"
+	applicationstorage "k8s.io/sample-apiserver/pkg/registry/wardle/application"
 )
 
 var (
@@ -107,7 +107,12 @@ func (c completedConfig) New() (*WardleServer, error) {
 	apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(wardle.GroupName, Scheme, metav1.ParameterCodec, Codecs)
 
 	v1alpha1storage := map[string]rest.Storage{}
-	v1alpha1storage["applications"] = wardleregistry.RESTInPeace(flunderstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter))
+	v1alpha1storage["applications"] = wardleregistry.RESTInPeace(
+		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "applications", "application"))
+	v1alpha1storage["foos"] = wardleregistry.RESTInPeace(
+		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "foos", "foo"))
+	v1alpha1storage["trees"] = wardleregistry.RESTInPeace(
+		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "trees", "tree"))
 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
 
 	if err := s.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {

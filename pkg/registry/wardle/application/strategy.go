@@ -32,9 +32,9 @@ import (
 	"k8s.io/sample-apiserver/pkg/apis/wardle"
 )
 
-// NewStrategy creates and returns a applicationStrategy instance
-func NewStrategy(typer runtime.ObjectTyper) applicationStrategy {
-	return applicationStrategy{typer, names.SimpleNameGenerator}
+// NewStrategy creates and returns an applicationStrategy instance
+func NewStrategy(typer runtime.ObjectTyper, resourceName string) applicationStrategy {
+	return applicationStrategy{typer, names.SimpleNameGenerator, resourceName}
 }
 
 // GetAttrs returns labels.Set, fields.Set, and error in case the given runtime.Object is not a Application
@@ -64,9 +64,10 @@ func SelectableFields(obj *wardle.Application) fields.Set {
 type applicationStrategy struct {
 	runtime.ObjectTyper
 	names.NameGenerator
+	resourceName string
 }
 
-func (applicationStrategy) NamespaceScoped() bool {
+func (s applicationStrategy) NamespaceScoped() bool {
 	return true
 }
 
