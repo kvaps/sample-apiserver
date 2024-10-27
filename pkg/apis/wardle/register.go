@@ -50,5 +50,14 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&Application{},
 		&ApplicationList{},
 	)
+
+	// Register "Foo" and "FooList" as internal types
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Foo"), &Application{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("FooList"), &ApplicationList{})
+
+	// Register "Tree" and "TreeList" as internal types
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Tree"), &Application{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("TreeList"), &ApplicationList{})
+
 	return nil
 }

@@ -41,7 +41,8 @@ func NewREST(
 		resourcePrefix: resourceName,
 	}
 
-	groupVersion := schema.GroupVersion{Group: wardle.GroupName, Version: "v1alpha1"}
+	// Use the internal group version
+	groupVersion := wardle.SchemeGroupVersion
 
 	expectedGVK := groupVersion.WithKind(kindName)
 	expectedListGVK := groupVersion.WithKind(kindName + "List")
@@ -88,9 +89,11 @@ func NewREST(
 		return nil, err
 	}
 
-	// Return the REST storage with the GVK set
+	// Set the GVK for the discovery endpoint to the versioned GVK
+	versionedGVK := schema.GroupVersion{Group: wardle.GroupName, Version: "v1alpha1"}.WithKind(kindName)
+
 	return &registry.REST{
 		Store: store,
-		GVK:   expectedGVK,
+		GVK:   versionedGVK,
 	}, nil
 }

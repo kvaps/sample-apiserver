@@ -78,8 +78,8 @@ func (applicationStrategy) PrepareForUpdate(ctx context.Context, obj, old runtim
 }
 
 func (applicationStrategy) Validate(ctx context.Context, obj runtime.Object) field.ErrorList {
-	flunder := obj.(*wardle.Application)
-	return validation.ValidateApplication(flunder)
+	application := obj.(*wardle.Application)
+	return validation.ValidateApplication(application)
 }
 
 // WarningsOnCreate returns warnings for the creation of the given object.
