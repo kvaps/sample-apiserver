@@ -18,4 +18,4 @@ limitations under the License.
 
 package v1alpha1
 
-type FlunderExpansion interface{}
+type ApplicationExpansion interface{}

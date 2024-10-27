@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package flunder
+package application
 
 import (
 	"context"
@@ -32,23 +32,23 @@ import (
 	"k8s.io/sample-apiserver/pkg/apis/wardle"
 )
 
-// NewStrategy creates and returns a flunderStrategy instance
-func NewStrategy(typer runtime.ObjectTyper) flunderStrategy {
-	return flunderStrategy{typer, names.SimpleNameGenerator}
+// NewStrategy creates and returns a applicationStrategy instance
+func NewStrategy(typer runtime.ObjectTyper) applicationStrategy {
+	return applicationStrategy{typer, names.SimpleNameGenerator}
 }
 
-// GetAttrs returns labels.Set, fields.Set, and error in case the given runtime.Object is not a Flunder
+// GetAttrs returns labels.Set, fields.Set, and error in case the given runtime.Object is not a Application
 func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, error) {
-	apiserver, ok := obj.(*wardle.Flunder)
+	apiserver, ok := obj.(*wardle.Application)
 	if !ok {
-		return nil, nil, fmt.Errorf("given object is not a Flunder")
+		return nil, nil, fmt.Errorf("given object is not a Application")
 	}
 	return labels.Set(apiserver.ObjectMeta.Labels), SelectableFields(apiserver), nil
 }
 
-// MatchFlunder is the filter used by the generic etcd backend to watch events
+// MatchApplication is the filter used by the generic etcd backend to watch events
 // from etcd to clients of the apiserver only interested in specific labels/fields.
-func MatchFlunder(label labels.Selector, field fields.Selector) storage.SelectionPredicate {
+func MatchApplication(label labels.Selector, field fields.Selector) storage.SelectionPredicate {
 	return storage.SelectionPredicate{
 		Label:    label,
 		Field:    field,
@@ -57,49 +57,51 @@ func MatchFlunder(label labels.Selector, field fields.Selector) storage.Selectio
 }
 
 // SelectableFields returns a field set that represents the object.
-func SelectableFields(obj *wardle.Flunder) fields.Set {
+func SelectableFields(obj *wardle.Application) fields.Set {
 	return generic.ObjectMetaFieldsSet(&obj.ObjectMeta, true)
 }
 
-type flunderStrategy struct {
+type applicationStrategy struct {
 	runtime.ObjectTyper
 	names.NameGenerator
 }
 
-func (flunderStrategy) NamespaceScoped() bool {
+func (applicationStrategy) NamespaceScoped() bool {
 	return true
 }
 
-func (flunderStrategy) PrepareForCreate(ctx context.Context, obj runtime.Object) {
+func (applicationStrategy) PrepareForCreate(ctx context.Context, obj runtime.Object) {
 }
 
-func (flunderStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
+func (applicationStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
 }
 
-func (flunderStrategy) Validate(ctx context.Context, obj runtime.Object) field.ErrorList {
-	flunder := obj.(*wardle.Flunder)
-	return validation.ValidateFlunder(flunder)
+func (applicationStrategy) Validate(ctx context.Context, obj runtime.Object) field.ErrorList {
+	flunder := obj.(*wardle.Application)
+	return validation.ValidateApplication(flunder)
 }
 
 // WarningsOnCreate returns warnings for the creation of the given object.
-func (flunderStrategy) WarningsOnCreate(ctx context.Context, obj runtime.Object) []string { return nil }
+func (applicationStrategy) WarningsOnCreate(ctx context.Context, obj runtime.Object) []string {
+	return nil
+}
 
-func (flunderStrategy) AllowCreateOnUpdate() bool {
+func (applicationStrategy) AllowCreateOnUpdate() bool {
 	return false
 }
 
-func (flunderStrategy) AllowUnconditionalUpdate() bool {
+func (applicationStrategy) AllowUnconditionalUpdate() bool {
 	return false
 }
 
-func (flunderStrategy) Canonicalize(obj runtime.Object) {
+func (applicationStrategy) Canonicalize(obj runtime.Object) {
 }
 
-func (flunderStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
+func (applicationStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
 	return field.ErrorList{}
 }
 
 // WarningsOnUpdate returns warnings for the given update.
-func (flunderStrategy) WarningsOnUpdate(ctx context.Context, obj, old runtime.Object) []string {
+func (applicationStrategy) WarningsOnUpdate(ctx context.Context, obj, old runtime.Object) []string {
 	return nil
 }

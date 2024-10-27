@@ -36,6 +36,12 @@ if [[ -n "${API_KNOWN_VIOLATIONS_DIR:-}" ]]; then
     fi
 fi
 
+#(
+#  set -x;
+#  cd ../pkg/apis
+#  controller-gen object:headerFile="../../hack/boilerplate.go.txt" paths="./..."
+#)
+
 kube::codegen::gen_openapi \
     --output-dir "${SCRIPT_ROOT}/pkg/generated/openapi" \
     --output-pkg "${THIS_PKG}/pkg/generated/openapi" \

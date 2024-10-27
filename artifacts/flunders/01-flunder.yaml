@@ -1,8 +1,9 @@
 apiVersion: apps.cozystack.io/v1alpha1
-kind: Flunder
+kind: Application
 metadata:
   name: my-first-flunder
   labels:
     sample-label: "true"
 spec:
-  flunderReference: "asd"
+  values: "asdasd"
+  version: "0.1.3"

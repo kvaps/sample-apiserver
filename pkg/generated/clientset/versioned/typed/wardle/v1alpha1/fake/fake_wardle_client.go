@@ -28,8 +28,8 @@ type FakeAppsV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeAppsV1alpha1) Flunders(namespace string) v1alpha1.FlunderInterface {
-	return &FakeFlunders{c, namespace}
+func (c *FakeAppsV1alpha1) Applications(namespace string) v1alpha1.ApplicationInterface {
+	return &FakeApplications{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

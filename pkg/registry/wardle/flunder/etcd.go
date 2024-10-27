@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package flunder
+package application
 
 import (
 	"k8s.io/apimachinery/pkg/runtime"
@@ -30,18 +30,18 @@ func NewREST(scheme *runtime.Scheme, optsGetter generic.RESTOptionsGetter) (*reg
 	strategy := NewStrategy(scheme)
 
 	store := &genericregistry.Store{
-		NewFunc:                   func() runtime.Object { return &wardle.Flunder{} },
-		NewListFunc:               func() runtime.Object { return &wardle.FlunderList{} },
-		PredicateFunc:             MatchFlunder,
-		DefaultQualifiedResource:  wardle.Resource("flunders"),
-		SingularQualifiedResource: wardle.Resource("flunder"),
+		NewFunc:                   func() runtime.Object { return &wardle.Application{} },
+		NewListFunc:               func() runtime.Object { return &wardle.ApplicationList{} },
+		PredicateFunc:             MatchApplication,
+		DefaultQualifiedResource:  wardle.Resource("applications"),
+		SingularQualifiedResource: wardle.Resource("application"),
 
 		CreateStrategy: strategy,
 		UpdateStrategy: strategy,
 		DeleteStrategy: strategy,
 
 		// TODO: define table converter that exposes more than name/creation timestamp
-		TableConvertor: rest.NewDefaultTableConvertor(wardle.Resource("flunders")),
+		TableConvertor: rest.NewDefaultTableConvertor(wardle.Resource("applications")),
 	}
 	options := &generic.StoreOptions{RESTOptions: optsGetter, AttrFunc: GetAttrs}
 	if err := store.CompleteWithOptions(options); err != nil {

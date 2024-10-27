@@ -25,22 +25,22 @@ import (
 	wardlev1alpha1 "k8s.io/sample-apiserver/pkg/apis/wardle/v1alpha1"
 )
 
-// FlunderApplyConfiguration represents a declarative configuration of the Flunder type for use
+// ApplicationApplyConfiguration represents a declarative configuration of the Application type for use
 // with apply.
-type FlunderApplyConfiguration struct {
+type ApplicationApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                             *FlunderSpecApplyConfiguration `json:"spec,omitempty"`
-	Status                           *wardlev1alpha1.FlunderStatus  `json:"status,omitempty"`
+	Spec                             *ApplicationSpecApplyConfiguration `json:"spec,omitempty"`
+	Status                           *wardlev1alpha1.ApplicationStatus  `json:"status,omitempty"`
 }
 
-// Flunder constructs a declarative configuration of the Flunder type for use with
+// Application constructs a declarative configuration of the Application type for use with
 // apply.
-func Flunder(name, namespace string) *FlunderApplyConfiguration {
-	b := &FlunderApplyConfiguration{}
+func Application(name, namespace string) *ApplicationApplyConfiguration {
+	b := &ApplicationApplyConfiguration{}
 	b.WithName(name)
 	b.WithNamespace(namespace)
-	b.WithKind("Flunder")
+	b.WithKind("Application")
 	b.WithAPIVersion("apps.cozystack.io/v1alpha1")
 	return b
 }
@@ -48,7 +48,7 @@ func Flunder(name, namespace string) *FlunderApplyConfiguration {
 // WithKind sets the Kind field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Kind field is set to the value of the last call.
-func (b *FlunderApplyConfiguration) WithKind(value string) *FlunderApplyConfiguration {
+func (b *ApplicationApplyConfiguration) WithKind(value string) *ApplicationApplyConfiguration {
 	b.TypeMetaApplyConfiguration.Kind = &value
 	return b
 }
@@ -56,7 +56,7 @@ func (b *FlunderApplyConfiguration) WithKind(value string) *FlunderApplyConfigur
 // WithAPIVersion sets the APIVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the APIVersion field is set to the value of the last call.
-func (b *FlunderApplyConfiguration) WithAPIVersion(value string) *FlunderApplyConfiguration {
+func (b *ApplicationApplyConfiguration) WithAPIVersion(value string) *ApplicationApplyConfiguration {
 	b.TypeMetaApplyConfiguration.APIVersion = &value
 	return b
 }
@@ -64,7 +64,7 @@ func (b *FlunderApplyConfiguration) WithAPIVersion(value string) *FlunderApplyCo
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Name field is set to the value of the last call.
-func (b *FlunderApplyConfiguration) WithName(value string) *FlunderApplyConfiguration {
+func (b *ApplicationApplyConfiguration) WithName(value string) *ApplicationApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.Name = &value
 	return b
@@ -73,7 +73,7 @@ func (b *FlunderApplyConfiguration) WithName(value string) *FlunderApplyConfigur
 // WithGenerateName sets the GenerateName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the GenerateName field is set to the value of the last call.
-func (b *FlunderApplyConfiguration) WithGenerateName(value string) *FlunderApplyConfiguration {
+func (b *ApplicationApplyConfiguration) WithGenerateName(value string) *ApplicationApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.GenerateName = &value
 	return b
@@ -82,7 +82,7 @@ func (b *FlunderApplyConfiguration) WithGenerateName(value string) *FlunderApply
 // WithNamespace sets the Namespace field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Namespace field is set to the value of the last call.
-func (b *FlunderApplyConfiguration) WithNamespace(value string) *FlunderApplyConfiguration {
+func (b *ApplicationApplyConfiguration) WithNamespace(value string) *ApplicationApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.Namespace = &value
 	return b
@@ -91,7 +91,7 @@ func (b *FlunderApplyConfiguration) WithNamespace(value string) *FlunderApplyCon
 // WithUID sets the UID field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the UID field is set to the value of the last call.
-func (b *FlunderApplyConfiguration) WithUID(value types.UID) *FlunderApplyConfiguration {
+func (b *ApplicationApplyConfiguration) WithUID(value types.UID) *ApplicationApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.UID = &value
 	return b
@@ -100,7 +100,7 @@ func (b *FlunderApplyConfiguration) WithUID(value types.UID) *FlunderApplyConfig
 // WithResourceVersion sets the ResourceVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ResourceVersion field is set to the value of the last call.
-func (b *FlunderApplyConfiguration) WithResourceVersion(value string) *FlunderApplyConfiguration {
+func (b *ApplicationApplyConfiguration) WithResourceVersion(value string) *ApplicationApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.ResourceVersion = &value
 	return b
@@ -109,7 +109,7 @@ func (b *FlunderApplyConfiguration) WithResourceVersion(value string) *FlunderAp
 // WithGeneration sets the Generation field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Generation field is set to the value of the last call.
-func (b *FlunderApplyConfiguration) WithGeneration(value int64) *FlunderApplyConfiguration {
+func (b *ApplicationApplyConfiguration) WithGeneration(value int64) *ApplicationApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.Generation = &value
 	return b
@@ -118,7 +118,7 @@ func (b *FlunderApplyConfiguration) WithGeneration(value int64) *FlunderApplyCon
 // WithCreationTimestamp sets the CreationTimestamp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the CreationTimestamp field is set to the value of the last call.
-func (b *FlunderApplyConfiguration) WithCreationTimestamp(value metav1.Time) *FlunderApplyConfiguration {
+func (b *ApplicationApplyConfiguration) WithCreationTimestamp(value metav1.Time) *ApplicationApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.CreationTimestamp = &value
 	return b
@@ -127,7 +127,7 @@ func (b *FlunderApplyConfiguration) WithCreationTimestamp(value metav1.Time) *Fl
 // WithDeletionTimestamp sets the DeletionTimestamp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DeletionTimestamp field is set to the value of the last call.
-func (b *FlunderApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *FlunderApplyConfiguration {
+func (b *ApplicationApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *ApplicationApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.DeletionTimestamp = &value
 	return b
@@ -136,7 +136,7 @@ func (b *FlunderApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *Fl
 // WithDeletionGracePeriodSeconds sets the DeletionGracePeriodSeconds field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DeletionGracePeriodSeconds field is set to the value of the last call.
-func (b *FlunderApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *FlunderApplyConfiguration {
+func (b *ApplicationApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *ApplicationApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.DeletionGracePeriodSeconds = &value
 	return b
@@ -146,7 +146,7 @@ func (b *FlunderApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) 
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the Labels field,
 // overwriting an existing map entries in Labels field with the same key.
-func (b *FlunderApplyConfiguration) WithLabels(entries map[string]string) *FlunderApplyConfiguration {
+func (b *ApplicationApplyConfiguration) WithLabels(entries map[string]string) *ApplicationApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	if b.ObjectMetaApplyConfiguration.Labels == nil && len(entries) > 0 {
 		b.ObjectMetaApplyConfiguration.Labels = make(map[string]string, len(entries))
@@ -161,7 +161,7 @@ func (b *FlunderApplyConfiguration) WithLabels(entries map[string]string) *Flund
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the Annotations field,
 // overwriting an existing map entries in Annotations field with the same key.
-func (b *FlunderApplyConfiguration) WithAnnotations(entries map[string]string) *FlunderApplyConfiguration {
+func (b *ApplicationApplyConfiguration) WithAnnotations(entries map[string]string) *ApplicationApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	if b.ObjectMetaApplyConfiguration.Annotations == nil && len(entries) > 0 {
 		b.ObjectMetaApplyConfiguration.Annotations = make(map[string]string, len(entries))
@@ -175,7 +175,7 @@ func (b *FlunderApplyConfiguration) WithAnnotations(entries map[string]string) *
 // WithOwnerReferences adds the given value to the OwnerReferences field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the OwnerReferences field.
-func (b *FlunderApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferenceApplyConfiguration) *FlunderApplyConfiguration {
+func (b *ApplicationApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferenceApplyConfiguration) *ApplicationApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
 		if values[i] == nil {
@@ -189,7 +189,7 @@ func (b *FlunderApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerRefer
 // WithFinalizers adds the given value to the Finalizers field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Finalizers field.
-func (b *FlunderApplyConfiguration) WithFinalizers(values ...string) *FlunderApplyConfiguration {
+func (b *ApplicationApplyConfiguration) WithFinalizers(values ...string) *ApplicationApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
 		b.ObjectMetaApplyConfiguration.Finalizers = append(b.ObjectMetaApplyConfiguration.Finalizers, values[i])
@@ -197,7 +197,7 @@ func (b *FlunderApplyConfiguration) WithFinalizers(values ...string) *FlunderApp
 	return b
 }
 
-func (b *FlunderApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
+func (b *ApplicationApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
 	if b.ObjectMetaApplyConfiguration == nil {
 		b.ObjectMetaApplyConfiguration = &v1.ObjectMetaApplyConfiguration{}
 	}
@@ -206,7 +206,7 @@ func (b *FlunderApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
 // WithSpec sets the Spec field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Spec field is set to the value of the last call.
-func (b *FlunderApplyConfiguration) WithSpec(value *FlunderSpecApplyConfiguration) *FlunderApplyConfiguration {
+func (b *ApplicationApplyConfiguration) WithSpec(value *ApplicationSpecApplyConfiguration) *ApplicationApplyConfiguration {
 	b.Spec = value
 	return b
 }
@@ -214,13 +214,13 @@ func (b *FlunderApplyConfiguration) WithSpec(value *FlunderSpecApplyConfiguratio
 // WithStatus sets the Status field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Status field is set to the value of the last call.
-func (b *FlunderApplyConfiguration) WithStatus(value wardlev1alpha1.FlunderStatus) *FlunderApplyConfiguration {
+func (b *ApplicationApplyConfiguration) WithStatus(value wardlev1alpha1.ApplicationStatus) *ApplicationApplyConfiguration {
 	b.Status = &value
 	return b
 }
 
 // GetName retrieves the value of the Name field in the declarative configuration.
-func (b *FlunderApplyConfiguration) GetName() *string {
+func (b *ApplicationApplyConfiguration) GetName() *string {
 	b.ensureObjectMetaApplyConfigurationExists()
 	return b.ObjectMetaApplyConfiguration.Name
 }

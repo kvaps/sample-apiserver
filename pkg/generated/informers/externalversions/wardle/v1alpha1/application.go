@@ -32,59 +32,59 @@ import (
 	wardlev1alpha1 "k8s.io/sample-apiserver/pkg/generated/listers/wardle/v1alpha1"
 )
 
-// FlunderInformer provides access to a shared informer and lister for
-// Flunders.
-type FlunderInformer interface {
+// ApplicationInformer provides access to a shared informer and lister for
+// Applications.
+type ApplicationInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() wardlev1alpha1.FlunderLister
+	Lister() wardlev1alpha1.ApplicationLister
 }
 
-type flunderInformer struct {
+type applicationInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewFlunderInformer constructs a new informer for Flunder type.
+// NewApplicationInformer constructs a new informer for Application type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFlunderInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredFlunderInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewApplicationInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredApplicationInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredFlunderInformer constructs a new informer for Flunder type.
+// NewFilteredApplicationInformer constructs a new informer for Application type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredFlunderInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredApplicationInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.AppsV1alpha1().Flunders(namespace).List(context.TODO(), options)
+				return client.AppsV1alpha1().Applications(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.AppsV1alpha1().Flunders(namespace).Watch(context.TODO(), options)
+				return client.AppsV1alpha1().Applications(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&apiswardlev1alpha1.Flunder{},
+		&apiswardlev1alpha1.Application{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *flunderInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredFlunderInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *applicationInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredApplicationInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *flunderInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&apiswardlev1alpha1.Flunder{}, f.defaultInformer)
+func (f *applicationInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&apiswardlev1alpha1.Application{}, f.defaultInformer)
 }
 
-func (f *flunderInformer) Lister() wardlev1alpha1.FlunderLister {
-	return wardlev1alpha1.NewFlunderLister(f.Informer().GetIndexer())
+func (f *applicationInformer) Lister() wardlev1alpha1.ApplicationLister {
+	return wardlev1alpha1.NewApplicationLister(f.Informer().GetIndexer())
 }

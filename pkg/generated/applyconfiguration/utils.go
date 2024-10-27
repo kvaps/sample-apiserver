@@ -32,10 +32,10 @@ import (
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
 	// Group=apps.cozystack.io, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithKind("Flunder"):
-		return &wardlev1alpha1.FlunderApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("FlunderSpec"):
-		return &wardlev1alpha1.FlunderSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("Application"):
+		return &wardlev1alpha1.ApplicationApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ApplicationSpec"):
+		return &wardlev1alpha1.ApplicationSpecApplyConfiguration{}
 
 	}
 	return nil

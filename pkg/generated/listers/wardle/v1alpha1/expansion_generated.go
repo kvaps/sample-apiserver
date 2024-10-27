@@ -18,10 +18,10 @@ limitations under the License.
 
 package v1alpha1
 
-// FlunderListerExpansion allows custom methods to be added to
-// FlunderLister.
-type FlunderListerExpansion interface{}
+// ApplicationListerExpansion allows custom methods to be added to
+// ApplicationLister.
+type ApplicationListerExpansion interface{}
 
-// FlunderNamespaceListerExpansion allows custom methods to be added to
-// FlunderNamespaceLister.
-type FlunderNamespaceListerExpansion interface{}
+// ApplicationNamespaceListerExpansion allows custom methods to be added to
+// ApplicationNamespaceLister.
+type ApplicationNamespaceListerExpansion interface{}
