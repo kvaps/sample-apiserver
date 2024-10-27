@@ -10,7 +10,6 @@ import (
 	"k8s.io/sample-apiserver/pkg/registry"
 )
 
-// Custom RESTOptionsGetter that sets the ResourcePrefix
 type resourceRESTOptionsGetter struct {
 	delegate       generic.RESTOptionsGetter
 	resourcePrefix string
@@ -28,12 +27,12 @@ func (r *resourceRESTOptionsGetter) GetRESTOptions(
 	return restOptions, nil
 }
 
-// NewREST returns a RESTStorage object that will work against API services.
 func NewREST(
 	scheme *runtime.Scheme,
 	optsGetter generic.RESTOptionsGetter,
 	resourceName string,
 	singularResourceName string,
+	kindName string,
 ) (*registry.REST, error) {
 	strategy := NewStrategy(scheme, resourceName)
 
@@ -42,12 +41,25 @@ func NewREST(
 		resourcePrefix: resourceName,
 	}
 
+	groupVersion := schema.GroupVersion{Group: wardle.GroupName, Version: "v1alpha1"}
+
+	expectedGVK := groupVersion.WithKind(kindName)
+	expectedListGVK := groupVersion.WithKind(kindName + "List")
+
 	store := &genericregistry.Store{
 		NewFunc: func() runtime.Object {
-			return &wardle.Application{}
+			obj, err := scheme.New(expectedGVK)
+			if err != nil {
+				panic(err)
+			}
+			return obj
 		},
 		NewListFunc: func() runtime.Object {
-			return &wardle.ApplicationList{}
+			obj, err := scheme.New(expectedListGVK)
+			if err != nil {
+				panic(err)
+			}
+			return obj
 		},
 		PredicateFunc: MatchApplication,
 		DefaultQualifiedResource: schema.GroupResource{
@@ -58,11 +70,9 @@ func NewREST(
 			Group:    wardle.GroupName,
 			Resource: singularResourceName,
 		},
-
 		CreateStrategy: strategy,
 		UpdateStrategy: strategy,
 		DeleteStrategy: strategy,
-
 		TableConvertor: rest.NewDefaultTableConvertor(schema.GroupResource{
 			Group:    wardle.GroupName,
 			Resource: resourceName,
@@ -78,5 +88,9 @@ func NewREST(
 		return nil, err
 	}
 
-	return &registry.REST{Store: store}, nil
+	// Return the REST storage with the GVK set
+	return &registry.REST{
+		Store: store,
+		GVK:   expectedGVK,
+	}, nil
 }

@@ -48,10 +48,15 @@ func init() {
 
 // Adds the list of known types to the given scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
-	scheme.AddKnownTypes(SchemeGroupVersion,
-		&Application{},
-		&ApplicationList{},
-	)
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Application"), &Application{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("ApplicationList"), &ApplicationList{})
+
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Foo"), &Application{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("FooList"), &ApplicationList{})
+
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Tree"), &Application{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("TreeList"), &ApplicationList{})
+
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil
 }

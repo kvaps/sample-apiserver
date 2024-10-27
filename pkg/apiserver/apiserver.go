@@ -108,11 +108,11 @@ func (c completedConfig) New() (*WardleServer, error) {
 
 	v1alpha1storage := map[string]rest.Storage{}
 	v1alpha1storage["applications"] = wardleregistry.RESTInPeace(
-		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "applications", "application"))
+		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "applications", "application", "Application"))
 	v1alpha1storage["foos"] = wardleregistry.RESTInPeace(
-		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "foos", "foo"))
+		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "foos", "foo", "Foo"))
 	v1alpha1storage["trees"] = wardleregistry.RESTInPeace(
-		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "trees", "tree"))
+		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "trees", "tree", "Tree"))
 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
 
 	if err := s.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {
