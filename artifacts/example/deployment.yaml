@@ -22,7 +22,7 @@ spec:
         # or
         # docker pull registry.k8s.io/e2e-test-images/sample-apiserver:1.17.4
         # docker tag registry.k8s.io/e2e-test-images/sample-apiserver:1.17.4 kube-sample-apiserver:latest
-        image: ghcr.io/kvaps/test:apiserver1@sha256:f0560d9dd3eb111e38565b4ff0bb2e06dd1173bae0a984ee9b344b56b1090ac2
+        image: ghcr.io/kvaps/test:apiserver1@sha256:1279948b7da8ab8a1d125423bad6077fb146597ed35aa548e6663d27061de10c
         args: [ "--etcd-servers=http://localhost:2379" ]
       - name: etcd
         image: gcr.io/etcd-development/etcd:v3.5.16

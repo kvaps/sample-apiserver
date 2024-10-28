@@ -1,7 +1,7 @@
 apiVersion: apps.cozystack.io/v1alpha1
-kind: Application
+kind: Kubernetes
 metadata:
-  name: my-first-flunder
+  name: my-first-cluster
   labels:
     sample-label: "true"
 spec:

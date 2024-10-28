@@ -51,11 +51,22 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Application"), &Application{})
 	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("ApplicationList"), &ApplicationList{})
 
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Foo"), &Application{})
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("FooList"), &ApplicationList{})
-
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Tree"), &Application{})
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("TreeList"), &ApplicationList{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Kubernetes"), &Application{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("KubernetesList"), &ApplicationList{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Postgres"), &Application{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("PostgresList"), &ApplicationList{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Redis"), &Application{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("RedisList"), &ApplicationList{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Kafka"), &Application{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("KafkaList"), &ApplicationList{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("RabbitMQ"), &Application{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("RabbitMQList"), &ApplicationList{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("FerretDB"), &Application{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("FerretDBList"), &ApplicationList{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("VMDisk"), &Application{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("VMDiskList"), &ApplicationList{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("VMInstance"), &Application{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("VMInstanceList"), &ApplicationList{})
 
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

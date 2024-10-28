@@ -109,10 +109,23 @@ func (c completedConfig) New() (*WardleServer, error) {
 	v1alpha1storage := map[string]rest.Storage{}
 	v1alpha1storage["applications"] = wardleregistry.RESTInPeace(
 		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "applications", "application", "Application"))
-	v1alpha1storage["foos"] = wardleregistry.RESTInPeace(
-		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "foos", "foo", "Foo"))
-	v1alpha1storage["trees"] = wardleregistry.RESTInPeace(
-		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "trees", "tree", "Tree"))
+	v1alpha1storage["kuberneteses"] = wardleregistry.RESTInPeace(
+		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "kuberneteses", "kubernetes", "Kubernetes"))
+	v1alpha1storage["postgreses"] = wardleregistry.RESTInPeace(
+		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "postgreses", "postgres", "Postgres"))
+	v1alpha1storage["redises"] = wardleregistry.RESTInPeace(
+		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "redises", "redis", "Redis"))
+	v1alpha1storage["kafkas"] = wardleregistry.RESTInPeace(
+		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "kafkas", "kafka", "Kafka"))
+	v1alpha1storage["rabbitmqs"] = wardleregistry.RESTInPeace(
+		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "rabbitmqs", "rabbitmq", "RabbitMQ"))
+	v1alpha1storage["ferretdbs"] = wardleregistry.RESTInPeace(
+		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "ferretdbs", "ferretdb", "FerretDB"))
+	v1alpha1storage["vmdisks"] = wardleregistry.RESTInPeace(
+		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "vmdisks", "vmdisk", "VMDisk"))
+	v1alpha1storage["vminstances"] = wardleregistry.RESTInPeace(
+		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "vminstances", "vminstance", "VMInstance"))
+
 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
 
 	if err := s.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {
