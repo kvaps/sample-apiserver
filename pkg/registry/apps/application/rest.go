@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"fmt"
+	"log"
 
 	helmv2 "github.com/fluxcd/helm-controller/api/v2"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,13 +16,17 @@ import (
 	"k8s.io/sample-apiserver/pkg/conversion"
 )
 
-// REST реализует rest.Storage для Application ресурсов
+var helmReleaseGVR = schema.GroupVersionResource{
+	Group:    "helm.toolkit.fluxcd.io",
+	Version:  "v2",
+	Resource: "helmreleases",
+}
+
 type REST struct {
 	dynamicClient dynamic.Interface
 	gvr           schema.GroupVersionResource
 }
 
-// NewREST создает новое REST хранилище для Application
 func NewREST(dynamicClient dynamic.Interface, gvr schema.GroupVersionResource) *REST {
 	return &REST{
 		dynamicClient: dynamicClient,
@@ -30,12 +35,10 @@ func NewREST(dynamicClient dynamic.Interface, gvr schema.GroupVersionResource) *
 }
 
 func (r *REST) NamespaceScoped() bool {
-	// Верните true, если ресурсы должны быть связаны с namespace
 	return true
 }
 
-// SingularName возвращает единственное число для ресурса.
-// TODO: automate this
+// GetSingularName реализует SingularNameProvider
 func (r *REST) GetSingularName() string {
 	return r.gvr.Resource
 }
@@ -59,9 +62,12 @@ func (r *REST) Create(ctx context.Context, obj runtime.Object, createValidation 
 		return nil, fmt.Errorf("failed to convert HelmRelease to unstructured: %v", err)
 	}
 
-	// Создание HelmRelease через динамический клиент
-	createdHR, err := r.dynamicClient.Resource(r.gvr).Namespace(app.Namespace).Create(ctx, &unstructured.Unstructured{Object: unstructuredHR}, *options)
+	log.Printf("Creating HelmRelease %s in namespace %s", helmRelease.Name, app.Namespace)
+
+	// Создание HelmRelease через динамический клиент с использованием правильного GVR
+	createdHR, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace(app.Namespace).Create(ctx, &unstructured.Unstructured{Object: unstructuredHR}, *options)
 	if err != nil {
+		log.Printf("Failed to create HelmRelease %s: %v", helmRelease.Name, err)
 		return nil, fmt.Errorf("failed to create HelmRelease: %v", err)
 	}
 
@@ -69,32 +75,42 @@ func (r *REST) Create(ctx context.Context, obj runtime.Object, createValidation 
 	convertedApp := &appsv1alpha1.Application{}
 	err = ConvertHelmReleaseToApplication(createdHR, convertedApp)
 	if err != nil {
+		log.Printf("Conversion error from HelmRelease to Application for resource %s: %v", createdHR.GetName(), err)
 		return nil, fmt.Errorf("conversion error: %v", err)
 	}
 
+	log.Printf("Successfully created and converted HelmRelease %s to Application", createdHR.GetName())
 	return convertedApp, nil
 }
 
 // Get получает Application, транслируя его из HelmRelease
 func (r *REST) Get(ctx context.Context, name string, options *v1.GetOptions) (runtime.Object, error) {
-	hr, err := r.dynamicClient.Resource(r.gvr).Namespace("tenant-kvaps").Get(ctx, name, *options)
+	log.Printf("Attempting to retrieve resource %s of kind %s in namespace tenant-kvaps", name, r.gvr.Resource)
+
+	hr, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace("tenant-kvaps").Get(ctx, name, *options)
 	if err != nil {
+		log.Printf("Error retrieving HelmRelease for resource %s: %v", name, err)
 		return nil, err
 	}
 
 	var app appsv1alpha1.Application
 	err = ConvertHelmReleaseToApplication(hr, &app)
 	if err != nil {
+		log.Printf("Conversion error from HelmRelease to Application for resource %s: %v", name, err)
 		return nil, fmt.Errorf("conversion error: %v", err)
 	}
 
+	log.Printf("Successfully retrieved and converted resource %s of kind %s", name, r.gvr.Resource)
 	return &app, nil
 }
 
 // List получает список Application ресурсов, транслируя их из HelmRelease
 func (r *REST) List(ctx context.Context, options *v1.ListOptions) (runtime.Object, error) {
-	hrList, err := r.dynamicClient.Resource(r.gvr).Namespace("tenant-kvaps").List(ctx, *options)
+	log.Printf("Attempting to list all resources of kind %s in namespace tenant-kvaps", r.gvr.Resource)
+
+	hrList, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace("tenant-kvaps").List(ctx, *options)
 	if err != nil {
+		log.Printf("Error listing HelmReleases for resource kind %s: %v", r.gvr.Resource, err)
 		return nil, err
 	}
 
@@ -104,11 +120,13 @@ func (r *REST) List(ctx context.Context, options *v1.ListOptions) (runtime.Objec
 		var app appsv1alpha1.Application
 		err := ConvertHelmReleaseToApplication(&hr, &app)
 		if err != nil {
+			log.Printf("Error converting HelmRelease to Application for resource %s: %v", hr.GetName(), err)
 			continue
 		}
 		appList.Items = append(appList.Items, app)
 	}
 
+	log.Printf("Successfully listed all resources of kind %s in namespace tenant-kvaps", r.gvr.Resource)
 	return &appList, nil
 }
 
@@ -129,23 +147,39 @@ func (r *REST) Update(ctx context.Context, obj runtime.Object, createValidation 
 		return nil, fmt.Errorf("failed to convert HelmRelease to unstructured: %v", err)
 	}
 
-	updatedHR, err := r.dynamicClient.Resource(r.gvr).Namespace(app.Namespace).Update(ctx, &unstructured.Unstructured{Object: unstructuredHR}, *options)
+	log.Printf("Updating HelmRelease %s in namespace %s", helmRelease.Name, app.Namespace)
+
+	// Обновление HelmRelease через динамический клиент с использованием правильного GVR
+	updatedHR, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace(app.Namespace).Update(ctx, &unstructured.Unstructured{Object: unstructuredHR}, *options)
 	if err != nil {
+		log.Printf("Failed to update HelmRelease %s: %v", helmRelease.Name, err)
 		return nil, fmt.Errorf("failed to update HelmRelease: %v", err)
 	}
 
+	// Конвертация обратно в Application для ответа
 	convertedApp := &appsv1alpha1.Application{}
 	err = ConvertHelmReleaseToApplication(updatedHR, convertedApp)
 	if err != nil {
+		log.Printf("Conversion error from HelmRelease to Application for resource %s: %v", updatedHR.GetName(), err)
 		return nil, fmt.Errorf("conversion error: %v", err)
 	}
 
+	log.Printf("Successfully updated and converted HelmRelease %s to Application", updatedHR.GetName())
 	return convertedApp, nil
 }
 
 // Delete удаляет Application, транслируя его удаление в HelmRelease
 func (r *REST) Delete(ctx context.Context, name string, options *v1.DeleteOptions) error {
-	return r.dynamicClient.Resource(r.gvr).Namespace("tenant-kvaps").Delete(ctx, name, *options)
+	log.Printf("Deleting HelmRelease %s in namespace tenant-kvaps", name)
+
+	err := r.dynamicClient.Resource(helmReleaseGVR).Namespace("tenant-kvaps").Delete(ctx, name, *options)
+	if err != nil {
+		log.Printf("Failed to delete HelmRelease %s: %v", name, err)
+		return err
+	}
+
+	log.Printf("Successfully deleted HelmRelease %s", name)
+	return nil
 }
 
 // Destroy освобождает ресурсы, связанные с REST.
@@ -160,18 +194,23 @@ func (r *REST) New() runtime.Object {
 
 // ConvertHelmReleaseToApplication конвертирует HelmRelease в Application
 func ConvertHelmReleaseToApplication(hr *unstructured.Unstructured, app *appsv1alpha1.Application) error {
+	log.Printf("Converting HelmRelease to Application for resource %s", hr.GetName())
+
 	var helmRelease helmv2.HelmRelease
 	err := runtime.DefaultUnstructuredConverter.FromUnstructured(hr.Object, &helmRelease)
 	if err != nil {
+		log.Printf("Error in conversion from unstructured to HelmRelease: %v", err)
 		return err
 	}
 
 	convertedApp, err := conversion.ConvertHelmReleaseToApplication(&helmRelease)
 	if err != nil {
+		log.Printf("Error in conversion from HelmRelease to Application struct: %v", err)
 		return err
 	}
 
 	*app = *convertedApp
+	log.Printf("Successfully converted HelmRelease %s to Application", hr.GetName())
 	return nil
 }
 

@@ -1,24 +1,9 @@
-/*
-Copyright 2016 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package apiserver
 
 import (
 	"fmt"
 
+	helmv2 "github.com/fluxcd/helm-controller/api/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -26,6 +11,7 @@ import (
 	"k8s.io/apiserver/pkg/registry/rest"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	"k8s.io/client-go/dynamic"
+	restclient "k8s.io/client-go/rest"
 
 	"k8s.io/sample-apiserver/pkg/apis/apps"
 	"k8s.io/sample-apiserver/pkg/apis/apps/install"
@@ -44,6 +30,11 @@ var (
 
 func init() {
 	install.Install(Scheme)
+
+	// Регистрация типов HelmRelease
+	if err := helmv2.AddToScheme(Scheme); err != nil {
+		panic(fmt.Sprintf("Failed to add HelmRelease types to scheme: %v", err))
+	}
 
 	// we need to add the options to empty v1
 	// TODO fix the server code to avoid this
@@ -71,7 +62,7 @@ type Config struct {
 	ExtraConfig   ExtraConfig
 }
 
-// AppsServer contains state for a Kubernetes cluster master/api server.
+// AppsServer содержит состояние для Kubernetes master/api server.
 type AppsServer struct {
 	GenericAPIServer *genericapiserver.GenericAPIServer
 }
@@ -81,12 +72,12 @@ type completedConfig struct {
 	ExtraConfig   *ExtraConfig
 }
 
-// CompletedConfig embeds a private pointer that cannot be instantiated outside of this package.
+// CompletedConfig внедряет приватный указатель, который нельзя создать за пределами этого пакета.
 type CompletedConfig struct {
 	*completedConfig
 }
 
-// Complete fills in any fields not set that are required to have valid data. It's mutating the receiver.
+// Complete заполняет любые поля, которые не установлены, но необходимы для корректной работы.
 func (cfg *Config) Complete() CompletedConfig {
 	c := completedConfig{
 		cfg.GenericConfig.Complete(),
@@ -96,7 +87,7 @@ func (cfg *Config) Complete() CompletedConfig {
 	return CompletedConfig{&c}
 }
 
-// New returns a new instance of AppsServer from the given config.
+// New возвращает новый экземпляр AppsServer из данной конфигурации.
 func (c completedConfig) New() (*AppsServer, error) {
 	genericServer, err := c.GenericConfig.New("sample-apiserver", genericapiserver.NewEmptyDelegate())
 	if err != nil {
@@ -109,29 +100,34 @@ func (c completedConfig) New() (*AppsServer, error) {
 
 	apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(apps.GroupName, Scheme, metav1.ParameterCodec, Codecs)
 
-	// Создание динамического клиента для HelmRelease
-	dynamicClient, err := dynamic.NewForConfig(c.GenericConfig.LoopbackClientConfig)
+	// Создание динамического клиента для HelmRelease с использованием InClusterConfig
+	inClusterConfig, err := restclient.InClusterConfig()
+	if err != nil {
+		return nil, fmt.Errorf("unable to get in-cluster config: %v", err)
+	}
+
+	dynamicClient, err := dynamic.NewForConfig(inClusterConfig)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create dynamic client: %v", err)
 	}
 
 	v1alpha1storage := map[string]rest.Storage{}
 	v1alpha1storage["kuberneteses"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "Kubernetes"}))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "kuberneteses"}))
 	v1alpha1storage["postgreses"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "Postgres"}))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "postgreses"}))
 	v1alpha1storage["redises"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "Redis"}))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "redises"}))
 	v1alpha1storage["kafkas"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "Kafka"}))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "kafkas"}))
 	v1alpha1storage["rabbitmqs"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "RabbitMQ"}))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "rabbitmqs"}))
 	v1alpha1storage["ferretdbs"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "FerretDB"}))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "ferretdbs"}))
 	v1alpha1storage["vmdisks"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "VMDisk"}))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "vmdisks"}))
 	v1alpha1storage["vminstances"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "VMInstance"}))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "vminstances"}))
 
 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
 
