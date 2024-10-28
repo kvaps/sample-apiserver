@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,20 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen=package
+// +k8s:conversion-gen=k8s.io/sample-apiserver/pkg/apis/apps
+// +k8s:defaulter-gen=TypeMeta
+// +groupName=apps.cozystack.io
 
-import (
-	"os"
-
-	genericapiserver "k8s.io/apiserver/pkg/server"
-	"k8s.io/component-base/cli"
-	"k8s.io/sample-apiserver/pkg/cmd/server"
-)
-
-func main() {
-	ctx := genericapiserver.SetupSignalContext()
-	options := server.NewAppsServerOptions(os.Stdout, os.Stderr)
-	cmd := server.NewCommandStartAppsServer(ctx, options)
-	code := cli.Run(cmd)
-	os.Exit(code)
-}
+// Package v1alpha1 is the v1alpha1 version of the API.
+package v1alpha1 // import "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1"

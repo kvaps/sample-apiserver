@@ -14,20 +14,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package validation
 
 import (
-	"os"
-
-	genericapiserver "k8s.io/apiserver/pkg/server"
-	"k8s.io/component-base/cli"
-	"k8s.io/sample-apiserver/pkg/cmd/server"
+	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/sample-apiserver/pkg/apis/apps"
 )
 
-func main() {
-	ctx := genericapiserver.SetupSignalContext()
-	options := server.NewAppsServerOptions(os.Stdout, os.Stderr)
-	cmd := server.NewCommandStartAppsServer(ctx, options)
-	code := cli.Run(cmd)
-	os.Exit(code)
+// ValidateApplication validates a Application.
+func ValidateApplication(f *apps.Application) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	allErrs = append(allErrs, ValidateApplicationSpec(&f.Spec, field.NewPath("spec"))...)
+
+	return allErrs
+}
+
+// ValidateApplicationSpec validates a ApplicationSpec.
+func ValidateApplicationSpec(s *apps.ApplicationSpec, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	// TODO validation
+
+	return allErrs
 }

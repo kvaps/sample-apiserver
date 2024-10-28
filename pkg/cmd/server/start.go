@@ -39,8 +39,8 @@ import (
 	utilversion "k8s.io/apiserver/pkg/util/version"
 	"k8s.io/component-base/featuregate"
 	baseversion "k8s.io/component-base/version"
-	"k8s.io/sample-apiserver/pkg/admission/wardleinitializer"
-	"k8s.io/sample-apiserver/pkg/apis/wardle/v1alpha1"
+	"k8s.io/sample-apiserver/pkg/admission/appsinitializer"
+	"k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1"
 	"k8s.io/sample-apiserver/pkg/apiserver"
 	clientset "k8s.io/sample-apiserver/pkg/generated/clientset/versioned"
 	informers "k8s.io/sample-apiserver/pkg/generated/informers/externalversions"
@@ -50,8 +50,8 @@ import (
 
 const defaultEtcdPathPrefix = "/registry/apps.cozystack.io"
 
-// WardleServerOptions contains state for master/api server
-type WardleServerOptions struct {
+// AppsServerOptions contains state for master/api server
+type AppsServerOptions struct {
 	RecommendedOptions *genericoptions.RecommendedOptions
 
 	SharedInformerFactory informers.SharedInformerFactory
@@ -61,7 +61,7 @@ type WardleServerOptions struct {
 	AlternateDNS []string
 }
 
-func WardleVersionToKubeVersion(ver *version.Version) *version.Version {
+func AppsVersionToKubeVersion(ver *version.Version) *version.Version {
 	if ver.Major() != 1 {
 		return nil
 	}
@@ -75,9 +75,9 @@ func WardleVersionToKubeVersion(ver *version.Version) *version.Version {
 	return mappedVer
 }
 
-// NewWardleServerOptions returns a new WardleServerOptions
-func NewWardleServerOptions(out, errOut io.Writer) *WardleServerOptions {
-	o := &WardleServerOptions{
+// NewAppsServerOptions returns a new AppsServerOptions
+func NewAppsServerOptions(out, errOut io.Writer) *AppsServerOptions {
+	o := &AppsServerOptions{
 		RecommendedOptions: genericoptions.NewRecommendedOptions(
 			defaultEtcdPathPrefix,
 			apiserver.Codecs.LegacyCodec(v1alpha1.SchemeGroupVersion),
@@ -90,13 +90,13 @@ func NewWardleServerOptions(out, errOut io.Writer) *WardleServerOptions {
 	return o
 }
 
-// NewCommandStartWardleServer provides a CLI handler for 'start master' command
-// with a default WardleServerOptions.
-func NewCommandStartWardleServer(ctx context.Context, defaults *WardleServerOptions) *cobra.Command {
+// NewCommandStartAppsServer provides a CLI handler for 'start master' command
+// with a default AppsServerOptions.
+func NewCommandStartAppsServer(ctx context.Context, defaults *AppsServerOptions) *cobra.Command {
 	o := *defaults
 	cmd := &cobra.Command{
-		Short: "Launch a wardle API server",
-		Long:  "Launch a wardle API server",
+		Short: "Launch a apps API server",
+		Long:  "Launch a apps API server",
 		PersistentPreRunE: func(*cobra.Command, []string) error {
 			return utilversion.DefaultComponentGlobalsRegistry.Set()
 		},
@@ -107,7 +107,7 @@ func NewCommandStartWardleServer(ctx context.Context, defaults *WardleServerOpti
 			if err := o.Validate(args); err != nil {
 				return err
 			}
-			if err := o.RunWardleServer(c.Context()); err != nil {
+			if err := o.RunAppsServer(c.Context()); err != nil {
 				return err
 			}
 			return nil
@@ -119,9 +119,9 @@ func NewCommandStartWardleServer(ctx context.Context, defaults *WardleServerOpti
 	o.RecommendedOptions.AddFlags(flags)
 
 	// The following lines demonstrate how to configure version compatibility and feature gates
-	// for the "Wardle" component, as an example of KEP-4330.
+	// for the "Apps" component, as an example of KEP-4330.
 
-	// Create an effective version object for the "Wardle" component.
+	// Create an effective version object for the "Apps" component.
 	// This initializes the binary version, the emulation version and the minimum compatibility version.
 	//
 	// Note:
@@ -130,33 +130,33 @@ func NewCommandStartWardleServer(ctx context.Context, defaults *WardleServerOpti
 	// - The minimum compatibility version specifies the minimum version that the component remains compatible with.
 	//
 	// Refer to KEP-4330 for more details: https://github.com/kubernetes/enhancements/blob/master/keps/sig-architecture/4330-compatibility-versions
-	defaultWardleVersion := "1.1"
-	// Register the "Wardle" component with the global component registry,
+	defaultAppsVersion := "1.1"
+	// Register the "Apps" component with the global component registry,
 	// associating it with its effective version and feature gate configuration.
 	// Will skip if the component has been registered, like in the integration test.
-	_, wardleFeatureGate := utilversion.DefaultComponentGlobalsRegistry.ComponentGlobalsOrRegister(
-		apiserver.WardleComponentName, utilversion.NewEffectiveVersion(defaultWardleVersion),
-		featuregate.NewVersionedFeatureGate(version.MustParse(defaultWardleVersion)))
+	_, appsFeatureGate := utilversion.DefaultComponentGlobalsRegistry.ComponentGlobalsOrRegister(
+		apiserver.AppsComponentName, utilversion.NewEffectiveVersion(defaultAppsVersion),
+		featuregate.NewVersionedFeatureGate(version.MustParse(defaultAppsVersion)))
 
 	// Add versioned feature specifications for the "BanFlunder" feature.
 	// These specifications, together with the effective version, determine if the feature is enabled.
-	utilruntime.Must(wardleFeatureGate.AddVersioned(map[featuregate.Feature]featuregate.VersionedSpecs{}))
+	utilruntime.Must(appsFeatureGate.AddVersioned(map[featuregate.Feature]featuregate.VersionedSpecs{}))
 
 	// Register the default kube component if not already present in the global registry.
 	_, _ = utilversion.DefaultComponentGlobalsRegistry.ComponentGlobalsOrRegister(utilversion.DefaultKubeComponent,
 		utilversion.NewEffectiveVersion(baseversion.DefaultKubeBinaryVersion), utilfeature.DefaultMutableFeatureGate)
 
-	// Set the emulation version mapping from the "Wardle" component to the kube component.
+	// Set the emulation version mapping from the "Apps" component to the kube component.
 	// This ensures that the emulation version of the latter is determined by the emulation version of the former.
-	utilruntime.Must(utilversion.DefaultComponentGlobalsRegistry.SetEmulationVersionMapping(apiserver.WardleComponentName, utilversion.DefaultKubeComponent, WardleVersionToKubeVersion))
+	utilruntime.Must(utilversion.DefaultComponentGlobalsRegistry.SetEmulationVersionMapping(apiserver.AppsComponentName, utilversion.DefaultKubeComponent, AppsVersionToKubeVersion))
 
 	utilversion.DefaultComponentGlobalsRegistry.AddFlags(flags)
 
 	return cmd
 }
 
-// Validate validates WardleServerOptions
-func (o WardleServerOptions) Validate(args []string) error {
+// Validate validates AppsServerOptions
+func (o AppsServerOptions) Validate(args []string) error {
 	errors := []error{}
 	errors = append(errors, o.RecommendedOptions.Validate()...)
 	errors = append(errors, utilversion.DefaultComponentGlobalsRegistry.Validate()...)
@@ -164,12 +164,12 @@ func (o WardleServerOptions) Validate(args []string) error {
 }
 
 // Complete fills in fields required to have valid data
-func (o *WardleServerOptions) Complete() error {
+func (o *AppsServerOptions) Complete() error {
 	return nil
 }
 
-// Config returns config for the api server given WardleServerOptions
-func (o *WardleServerOptions) Config() (*apiserver.Config, error) {
+// Config returns config for the api server given AppsServerOptions
+func (o *AppsServerOptions) Config() (*apiserver.Config, error) {
 	// TODO have a "real" external address
 	if err := o.RecommendedOptions.SecureServing.MaybeDefaultWithSelfSignedCerts("localhost", o.AlternateDNS, []net.IP{netutils.ParseIPSloppy("127.0.0.1")}); err != nil {
 		return nil, fmt.Errorf("error creating self-signed certificates: %v", err)
@@ -182,27 +182,27 @@ func (o *WardleServerOptions) Config() (*apiserver.Config, error) {
 		}
 		informerFactory := informers.NewSharedInformerFactory(client, c.LoopbackClientConfig.Timeout)
 		o.SharedInformerFactory = informerFactory
-		return []admission.PluginInitializer{wardleinitializer.New(informerFactory)}, nil
+		return []admission.PluginInitializer{appsinitializer.New(informerFactory)}, nil
 	}
 
 	serverConfig := genericapiserver.NewRecommendedConfig(apiserver.Codecs)
 
 	serverConfig.OpenAPIConfig = genericapiserver.DefaultOpenAPIConfig(sampleopenapi.GetOpenAPIDefinitions, openapi.NewDefinitionNamer(apiserver.Scheme))
-	serverConfig.OpenAPIConfig.Info.Title = "Wardle"
+	serverConfig.OpenAPIConfig.Info.Title = "Apps"
 	serverConfig.OpenAPIConfig.Info.Version = "0.1"
 
 	// Assign custom GetOperationIDAndTags function
 	serverConfig.OpenAPIConfig.GetOperationIDAndTags = customGetOperationIDAndTags
 
 	serverConfig.OpenAPIV3Config = genericapiserver.DefaultOpenAPIV3Config(sampleopenapi.GetOpenAPIDefinitions, openapi.NewDefinitionNamer(apiserver.Scheme))
-	serverConfig.OpenAPIV3Config.Info.Title = "Wardle"
+	serverConfig.OpenAPIV3Config.Info.Title = "Apps"
 	serverConfig.OpenAPIV3Config.Info.Version = "0.1"
 
 	// Assign custom GetOperationIDAndTags function
 	serverConfig.OpenAPIV3Config.GetOperationIDAndTags = customGetOperationIDAndTags
 
 	serverConfig.FeatureGate = utilversion.DefaultComponentGlobalsRegistry.FeatureGateFor(utilversion.DefaultKubeComponent)
-	serverConfig.EffectiveVersion = utilversion.DefaultComponentGlobalsRegistry.EffectiveVersionFor(apiserver.WardleComponentName)
+	serverConfig.EffectiveVersion = utilversion.DefaultComponentGlobalsRegistry.EffectiveVersionFor(apiserver.AppsComponentName)
 
 	if err := o.RecommendedOptions.ApplyTo(serverConfig); err != nil {
 		return nil, err
@@ -235,8 +235,8 @@ func customGetOperationIDAndTags(r *restful.Route) (string, []string, error) {
 	return operationID, tags, nil
 }
 
-// RunWardleServer starts a new WardleServer given WardleServerOptions
-func (o WardleServerOptions) RunWardleServer(ctx context.Context) error {
+// RunAppsServer starts a new AppsServer given AppsServerOptions
+func (o AppsServerOptions) RunAppsServer(ctx context.Context) error {
 	config, err := o.Config()
 	if err != nil {
 		return err

@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,20 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package fuzzer
 
 import (
-	"os"
+	fuzz "github.com/google/gofuzz"
+	"k8s.io/sample-apiserver/pkg/apis/apps"
 
-	genericapiserver "k8s.io/apiserver/pkg/server"
-	"k8s.io/component-base/cli"
-	"k8s.io/sample-apiserver/pkg/cmd/server"
+	runtimeserializer "k8s.io/apimachinery/pkg/runtime/serializer"
 )
 
-func main() {
-	ctx := genericapiserver.SetupSignalContext()
-	options := server.NewAppsServerOptions(os.Stdout, os.Stderr)
-	cmd := server.NewCommandStartAppsServer(ctx, options)
-	code := cli.Run(cmd)
-	os.Exit(code)
+// Funcs returns the fuzzer functions for the apps api group.
+var Funcs = func(codecs runtimeserializer.CodecFactory) []interface{} {
+	return []interface{}{
+		func(s *apps.ApplicationSpec, c fuzz.Continue) {
+			c.FuzzNoCustom(s) // fuzz self without calling this function again
+		},
+	}
 }

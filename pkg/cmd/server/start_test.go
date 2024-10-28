@@ -25,43 +25,43 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestWardleEmulationVersionToKubeEmulationVersion(t *testing.T) {
+func TestAppsEmulationVersionToKubeEmulationVersion(t *testing.T) {
 	defaultKubeEffectiveVersion := utilversion.DefaultKubeEffectiveVersion()
 
 	testCases := []struct {
 		desc                     string
-		wardleEmulationVer       *version.Version
+		appsEmulationVer       *version.Version
 		expectedKubeEmulationVer *version.Version
 	}{
 		{
 			desc:                     "same version as than kube binary",
-			wardleEmulationVer:       version.MajorMinor(1, 2),
+			appsEmulationVer:       version.MajorMinor(1, 2),
 			expectedKubeEmulationVer: defaultKubeEffectiveVersion.BinaryVersion(),
 		},
 		{
 			desc:                     "1 version lower than kube binary",
-			wardleEmulationVer:       version.MajorMinor(1, 1),
+			appsEmulationVer:       version.MajorMinor(1, 1),
 			expectedKubeEmulationVer: defaultKubeEffectiveVersion.BinaryVersion().OffsetMinor(-1),
 		},
 		{
 			desc:                     "2 versions lower than kube binary",
-			wardleEmulationVer:       version.MajorMinor(1, 0),
+			appsEmulationVer:       version.MajorMinor(1, 0),
 			expectedKubeEmulationVer: defaultKubeEffectiveVersion.BinaryVersion().OffsetMinor(-2),
 		},
 		{
 			desc:                     "capped at kube binary",
-			wardleEmulationVer:       version.MajorMinor(1, 3),
+			appsEmulationVer:       version.MajorMinor(1, 3),
 			expectedKubeEmulationVer: defaultKubeEffectiveVersion.BinaryVersion(),
 		},
 		{
 			desc:               "no mapping",
-			wardleEmulationVer: version.MajorMinor(2, 10),
+			appsEmulationVer: version.MajorMinor(2, 10),
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
-			mappedKubeEmulationVer := WardleVersionToKubeVersion(tc.wardleEmulationVer)
+			mappedKubeEmulationVer := AppsVersionToKubeVersion(tc.appsEmulationVer)
 			assert.True(t, mappedKubeEmulationVer.EqualTo(tc.expectedKubeEmulationVer))
 		})
 	}

@@ -24,10 +24,10 @@ import (
 	"k8s.io/apiserver/pkg/registry/rest"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 
-	"k8s.io/sample-apiserver/pkg/apis/wardle"
-	"k8s.io/sample-apiserver/pkg/apis/wardle/install"
-	wardleregistry "k8s.io/sample-apiserver/pkg/registry"
-	applicationstorage "k8s.io/sample-apiserver/pkg/registry/wardle/application"
+	"k8s.io/sample-apiserver/pkg/apis/apps"
+	"k8s.io/sample-apiserver/pkg/apis/apps/install"
+	appsregistry "k8s.io/sample-apiserver/pkg/registry"
+	applicationstorage "k8s.io/sample-apiserver/pkg/registry/apps/application"
 )
 
 var (
@@ -36,7 +36,7 @@ var (
 	// Codecs provides methods for retrieving codecs and serializers for specific
 	// versions and content types.
 	Codecs              = serializer.NewCodecFactory(Scheme)
-	WardleComponentName = "wardle"
+	AppsComponentName = "apps"
 )
 
 func init() {
@@ -68,8 +68,8 @@ type Config struct {
 	ExtraConfig   ExtraConfig
 }
 
-// WardleServer contains state for a Kubernetes cluster master/api server.
-type WardleServer struct {
+// AppsServer contains state for a Kubernetes cluster master/api server.
+type AppsServer struct {
 	GenericAPIServer *genericapiserver.GenericAPIServer
 }
 
@@ -93,37 +93,35 @@ func (cfg *Config) Complete() CompletedConfig {
 	return CompletedConfig{&c}
 }
 
-// New returns a new instance of WardleServer from the given config.
-func (c completedConfig) New() (*WardleServer, error) {
+// New returns a new instance of AppsServer from the given config.
+func (c completedConfig) New() (*AppsServer, error) {
 	genericServer, err := c.GenericConfig.New("sample-apiserver", genericapiserver.NewEmptyDelegate())
 	if err != nil {
 		return nil, err
 	}
 
-	s := &WardleServer{
+	s := &AppsServer{
 		GenericAPIServer: genericServer,
 	}
 
-	apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(wardle.GroupName, Scheme, metav1.ParameterCodec, Codecs)
+	apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(apps.GroupName, Scheme, metav1.ParameterCodec, Codecs)
 
 	v1alpha1storage := map[string]rest.Storage{}
-	v1alpha1storage["applications"] = wardleregistry.RESTInPeace(
-		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "applications", "application", "Application"))
-	v1alpha1storage["kuberneteses"] = wardleregistry.RESTInPeace(
+	v1alpha1storage["kuberneteses"] = appsregistry.RESTInPeace(
 		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "kuberneteses", "kubernetes", "Kubernetes"))
-	v1alpha1storage["postgreses"] = wardleregistry.RESTInPeace(
+	v1alpha1storage["postgreses"] = appsregistry.RESTInPeace(
 		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "postgreses", "postgres", "Postgres"))
-	v1alpha1storage["redises"] = wardleregistry.RESTInPeace(
+	v1alpha1storage["redises"] = appsregistry.RESTInPeace(
 		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "redises", "redis", "Redis"))
-	v1alpha1storage["kafkas"] = wardleregistry.RESTInPeace(
+	v1alpha1storage["kafkas"] = appsregistry.RESTInPeace(
 		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "kafkas", "kafka", "Kafka"))
-	v1alpha1storage["rabbitmqs"] = wardleregistry.RESTInPeace(
+	v1alpha1storage["rabbitmqs"] = appsregistry.RESTInPeace(
 		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "rabbitmqs", "rabbitmq", "RabbitMQ"))
-	v1alpha1storage["ferretdbs"] = wardleregistry.RESTInPeace(
+	v1alpha1storage["ferretdbs"] = appsregistry.RESTInPeace(
 		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "ferretdbs", "ferretdb", "FerretDB"))
-	v1alpha1storage["vmdisks"] = wardleregistry.RESTInPeace(
+	v1alpha1storage["vmdisks"] = appsregistry.RESTInPeace(
 		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "vmdisks", "vmdisk", "VMDisk"))
-	v1alpha1storage["vminstances"] = wardleregistry.RESTInPeace(
+	v1alpha1storage["vminstances"] = appsregistry.RESTInPeace(
 		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "vminstances", "vminstance", "VMInstance"))
 
 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage

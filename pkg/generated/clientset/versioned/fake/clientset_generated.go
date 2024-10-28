@@ -26,8 +26,8 @@ import (
 	"k8s.io/client-go/testing"
 	applyconfiguration "k8s.io/sample-apiserver/pkg/generated/applyconfiguration"
 	clientset "k8s.io/sample-apiserver/pkg/generated/clientset/versioned"
-	appsv1alpha1 "k8s.io/sample-apiserver/pkg/generated/clientset/versioned/typed/wardle/v1alpha1"
-	fakeappsv1alpha1 "k8s.io/sample-apiserver/pkg/generated/clientset/versioned/typed/wardle/v1alpha1/fake"
+	appsv1alpha1 "k8s.io/sample-apiserver/pkg/generated/clientset/versioned/typed/apps/v1alpha1"
+	fakeappsv1alpha1 "k8s.io/sample-apiserver/pkg/generated/clientset/versioned/typed/apps/v1alpha1/fake"
 )
 
 // NewSimpleClientset returns a clientset that will respond with the provided objects.

@@ -82,10 +82,10 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"k8s.io/apimachinery/pkg/runtime.TypeMeta":                           schema_k8sio_apimachinery_pkg_runtime_TypeMeta(ref),
 		"k8s.io/apimachinery/pkg/runtime.Unknown":                            schema_k8sio_apimachinery_pkg_runtime_Unknown(ref),
 		"k8s.io/apimachinery/pkg/version.Info":                               schema_k8sio_apimachinery_pkg_version_Info(ref),
-		"k8s.io/sample-apiserver/pkg/apis/wardle/v1alpha1.Application":       schema_pkg_apis_wardle_v1alpha1_Application(ref),
-		"k8s.io/sample-apiserver/pkg/apis/wardle/v1alpha1.ApplicationList":   schema_pkg_apis_wardle_v1alpha1_ApplicationList(ref),
-		"k8s.io/sample-apiserver/pkg/apis/wardle/v1alpha1.ApplicationSpec":   schema_pkg_apis_wardle_v1alpha1_ApplicationSpec(ref),
-		"k8s.io/sample-apiserver/pkg/apis/wardle/v1alpha1.ApplicationStatus": schema_pkg_apis_wardle_v1alpha1_ApplicationStatus(ref),
+		"k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.Application":       schema_pkg_apis_apps_v1alpha1_Application(ref),
+		"k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.ApplicationList":   schema_pkg_apis_apps_v1alpha1_ApplicationList(ref),
+		"k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.ApplicationSpec":   schema_pkg_apis_apps_v1alpha1_ApplicationSpec(ref),
+		"k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.ApplicationStatus": schema_pkg_apis_apps_v1alpha1_ApplicationStatus(ref),
 	}
 }
 
@@ -2678,7 +2678,7 @@ func schema_k8sio_apimachinery_pkg_version_Info(ref common.ReferenceCallback) co
 	}
 }
 
-func schema_pkg_apis_wardle_v1alpha1_Application(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_apps_v1alpha1_Application(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -2708,24 +2708,24 @@ func schema_pkg_apis_wardle_v1alpha1_Application(ref common.ReferenceCallback) c
 					"spec": {
 						SchemaProps: spec.SchemaProps{
 							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/sample-apiserver/pkg/apis/wardle/v1alpha1.ApplicationSpec"),
+							Ref:     ref("k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.ApplicationSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
 							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/sample-apiserver/pkg/apis/wardle/v1alpha1.ApplicationStatus"),
+							Ref:     ref("k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.ApplicationStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "k8s.io/sample-apiserver/pkg/apis/wardle/v1alpha1.ApplicationSpec", "k8s.io/sample-apiserver/pkg/apis/wardle/v1alpha1.ApplicationStatus"},
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.ApplicationSpec", "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.ApplicationStatus"},
 	}
 }
 
-func schema_pkg_apis_wardle_v1alpha1_ApplicationList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_apps_v1alpha1_ApplicationList(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -2759,7 +2759,7 @@ func schema_pkg_apis_wardle_v1alpha1_ApplicationList(ref common.ReferenceCallbac
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
 										Default: map[string]interface{}{},
-										Ref:     ref("k8s.io/sample-apiserver/pkg/apis/wardle/v1alpha1.Application"),
+										Ref:     ref("k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.Application"),
 									},
 								},
 							},
@@ -2770,11 +2770,11 @@ func schema_pkg_apis_wardle_v1alpha1_ApplicationList(ref common.ReferenceCallbac
 			},
 		},
 		Dependencies: []string{
-			"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "k8s.io/sample-apiserver/pkg/apis/wardle/v1alpha1.Application"},
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.Application"},
 	}
 }
 
-func schema_pkg_apis_wardle_v1alpha1_ApplicationSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_apps_v1alpha1_ApplicationSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -2800,7 +2800,7 @@ func schema_pkg_apis_wardle_v1alpha1_ApplicationSpec(ref common.ReferenceCallbac
 	}
 }
 
-func schema_pkg_apis_wardle_v1alpha1_ApplicationStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_apps_v1alpha1_ApplicationStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{

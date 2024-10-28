@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,20 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package install
 
 import (
-	"os"
-
-	genericapiserver "k8s.io/apiserver/pkg/server"
-	"k8s.io/component-base/cli"
-	"k8s.io/sample-apiserver/pkg/cmd/server"
+	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/sample-apiserver/pkg/apis/apps"
+	v1alpha1 "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1"
 )
 
-func main() {
-	ctx := genericapiserver.SetupSignalContext()
-	options := server.NewAppsServerOptions(os.Stdout, os.Stderr)
-	cmd := server.NewCommandStartAppsServer(ctx, options)
-	code := cli.Run(cmd)
-	os.Exit(code)
+// Install registers the API group and adds types to a scheme
+func Install(scheme *runtime.Scheme) {
+	utilruntime.Must(apps.AddToScheme(scheme))
+	utilruntime.Must(v1alpha1.AddToScheme(scheme))
+	utilruntime.Must(scheme.SetVersionPriority(v1alpha1.SchemeGroupVersion))
 }

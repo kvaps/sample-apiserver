@@ -22,9 +22,9 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	testing "k8s.io/client-go/testing"
-	v1alpha1 "k8s.io/sample-apiserver/pkg/apis/wardle/v1alpha1"
+	v1alpha1 "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1"
 	internal "k8s.io/sample-apiserver/pkg/generated/applyconfiguration/internal"
-	wardlev1alpha1 "k8s.io/sample-apiserver/pkg/generated/applyconfiguration/wardle/v1alpha1"
+	appsv1alpha1 "k8s.io/sample-apiserver/pkg/generated/applyconfiguration/apps/v1alpha1"
 )
 
 // ForKind returns an apply configuration type for the given GroupVersionKind, or nil if no
@@ -33,9 +33,9 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
 	// Group=apps.cozystack.io, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithKind("Application"):
-		return &wardlev1alpha1.ApplicationApplyConfiguration{}
+		return &appsv1alpha1.ApplicationApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ApplicationSpec"):
-		return &wardlev1alpha1.ApplicationSpecApplyConfiguration{}
+		return &appsv1alpha1.ApplicationSpecApplyConfiguration{}
 
 	}
 	return nil

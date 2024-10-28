@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,20 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package install
 
 import (
-	"os"
+	"testing"
 
-	genericapiserver "k8s.io/apiserver/pkg/server"
-	"k8s.io/component-base/cli"
-	"k8s.io/sample-apiserver/pkg/cmd/server"
+	"k8s.io/apimachinery/pkg/api/apitesting/roundtrip"
+	appsfuzzer "k8s.io/sample-apiserver/pkg/apis/apps/fuzzer"
 )
 
-func main() {
-	ctx := genericapiserver.SetupSignalContext()
-	options := server.NewAppsServerOptions(os.Stdout, os.Stderr)
-	cmd := server.NewCommandStartAppsServer(ctx, options)
-	code := cli.Run(cmd)
-	os.Exit(code)
+func TestRoundTripTypes(t *testing.T) {
+	roundtrip.RoundTripTestForAPIGroup(t, Install, appsfuzzer.Funcs)
+	// TODO: enable protobuf generation for the sample-apiserver
+	// roundtrip.RoundTripProtobufTestForAPIGroup(t, Install, appsfuzzer.Funcs)
 }
