@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apiserver/pkg/registry/rest"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/sample-apiserver/pkg/apis/apps"
 	appsv1alpha1 "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1"
 	"k8s.io/sample-apiserver/pkg/conversion"
 )
@@ -25,12 +26,16 @@ var helmReleaseGVR = schema.GroupVersionResource{
 type REST struct {
 	dynamicClient dynamic.Interface
 	gvr           schema.GroupVersionResource
+	kindName      string
+	GVK           schema.GroupVersionKind
 }
 
-func NewREST(dynamicClient dynamic.Interface, gvr schema.GroupVersionResource) *REST {
+func NewREST(dynamicClient dynamic.Interface, gvr schema.GroupVersionResource, kindName string) *REST {
 	return &REST{
 		dynamicClient: dynamicClient,
 		gvr:           gvr,
+		kindName:      kindName,
+		GVK:           schema.GroupVersion{Group: apps.GroupName, Version: "v1alpha1"}.WithKind(kindName),
 	}
 }
 
@@ -51,7 +56,7 @@ func (r *REST) Create(ctx context.Context, obj runtime.Object, createValidation 
 	}
 
 	// Конвертация Application в HelmRelease
-	helmRelease, err := ConvertApplicationToHelmRelease(app)
+	helmRelease, err := r.ConvertApplicationToHelmRelease(app)
 	if err != nil {
 		return nil, fmt.Errorf("conversion error: %v", err)
 	}
@@ -73,7 +78,7 @@ func (r *REST) Create(ctx context.Context, obj runtime.Object, createValidation 
 
 	// Конвертация обратно в Application для ответа
 	convertedApp := &appsv1alpha1.Application{}
-	err = ConvertHelmReleaseToApplication(createdHR, convertedApp)
+	err = r.ConvertHelmReleaseToApplication(createdHR, convertedApp)
 	if err != nil {
 		log.Printf("Conversion error from HelmRelease to Application for resource %s: %v", createdHR.GetName(), err)
 		return nil, fmt.Errorf("conversion error: %v", err)
@@ -94,7 +99,7 @@ func (r *REST) Get(ctx context.Context, name string, options *v1.GetOptions) (ru
 	}
 
 	var app appsv1alpha1.Application
-	err = ConvertHelmReleaseToApplication(hr, &app)
+	err = r.ConvertHelmReleaseToApplication(hr, &app)
 	if err != nil {
 		log.Printf("Conversion error from HelmRelease to Application for resource %s: %v", name, err)
 		return nil, fmt.Errorf("conversion error: %v", err)
@@ -118,7 +123,7 @@ func (r *REST) List(ctx context.Context, options *v1.ListOptions) (runtime.Objec
 	appList.Items = make([]appsv1alpha1.Application, 0, len(hrList.Items))
 	for _, hr := range hrList.Items {
 		var app appsv1alpha1.Application
-		err := ConvertHelmReleaseToApplication(&hr, &app)
+		err := r.ConvertHelmReleaseToApplication(&hr, &app)
 		if err != nil {
 			log.Printf("Error converting HelmRelease to Application for resource %s: %v", hr.GetName(), err)
 			continue
@@ -137,7 +142,7 @@ func (r *REST) Update(ctx context.Context, obj runtime.Object, createValidation 
 		return nil, fmt.Errorf("expected Application object, got %T", obj)
 	}
 
-	helmRelease, err := ConvertApplicationToHelmRelease(app)
+	helmRelease, err := r.ConvertApplicationToHelmRelease(app)
 	if err != nil {
 		return nil, fmt.Errorf("conversion error: %v", err)
 	}
@@ -158,7 +163,7 @@ func (r *REST) Update(ctx context.Context, obj runtime.Object, createValidation 
 
 	// Конвертация обратно в Application для ответа
 	convertedApp := &appsv1alpha1.Application{}
-	err = ConvertHelmReleaseToApplication(updatedHR, convertedApp)
+	err = r.ConvertHelmReleaseToApplication(updatedHR, convertedApp)
 	if err != nil {
 		log.Printf("Conversion error from HelmRelease to Application for resource %s: %v", updatedHR.GetName(), err)
 		return nil, fmt.Errorf("conversion error: %v", err)
@@ -192,8 +197,13 @@ func (r *REST) New() runtime.Object {
 	return &appsv1alpha1.Application{}
 }
 
+// Kind возвращает вид ресурса, который используется для обнаружения API
+func (r *REST) Kind() string {
+	return r.GVK.Kind
+}
+
 // ConvertHelmReleaseToApplication конвертирует HelmRelease в Application
-func ConvertHelmReleaseToApplication(hr *unstructured.Unstructured, app *appsv1alpha1.Application) error {
+func (r *REST) ConvertHelmReleaseToApplication(hr *unstructured.Unstructured, app *appsv1alpha1.Application) error {
 	log.Printf("Converting HelmRelease to Application for resource %s", hr.GetName())
 
 	var helmRelease helmv2.HelmRelease
@@ -215,7 +225,7 @@ func ConvertHelmReleaseToApplication(hr *unstructured.Unstructured, app *appsv1a
 }
 
 // ConvertApplicationToHelmRelease конвертирует Application в HelmRelease
-func ConvertApplicationToHelmRelease(app *appsv1alpha1.Application) (*helmv2.HelmRelease, error) {
+func (r *REST) ConvertApplicationToHelmRelease(app *appsv1alpha1.Application) (*helmv2.HelmRelease, error) {
 	helmRelease, err := conversion.ConvertApplicationToHelmRelease(app)
 	if err != nil {
 		return nil, err

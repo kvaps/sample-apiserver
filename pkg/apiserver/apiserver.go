@@ -113,21 +113,21 @@ func (c completedConfig) New() (*AppsServer, error) {
 
 	v1alpha1storage := map[string]rest.Storage{}
 	v1alpha1storage["kuberneteses"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "kuberneteses"}))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "kuberneteses"}, "Kubernetes"))
 	v1alpha1storage["postgreses"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "postgreses"}))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "postgreses"}, "Postgres"))
 	v1alpha1storage["redises"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "redises"}))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "redises"}, "Redis"))
 	v1alpha1storage["kafkas"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "kafkas"}))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "kafkas"}, "Kafka"))
 	v1alpha1storage["rabbitmqs"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "rabbitmqs"}))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "rabbitmqs"}, "RabbitMQ"))
 	v1alpha1storage["ferretdbs"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "ferretdbs"}))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "ferretdbs"}, "FerretDB"))
 	v1alpha1storage["vmdisks"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "vmdisks"}))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "vmdisks"}, "VMDisk"))
 	v1alpha1storage["vminstances"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "vminstances"}))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "vminstances"}, "VMInstance"))
 
 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
 
