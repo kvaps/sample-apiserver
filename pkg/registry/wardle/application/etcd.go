@@ -10,6 +10,7 @@ import (
 	"k8s.io/sample-apiserver/pkg/registry"
 )
 
+// resourceRESTOptionsGetter используется для получения REST опций
 type resourceRESTOptionsGetter struct {
 	delegate       generic.RESTOptionsGetter
 	resourcePrefix string
@@ -27,6 +28,7 @@ func (r *resourceRESTOptionsGetter) GetRESTOptions(
 	return restOptions, nil
 }
 
+// NewREST создает и возвращает REST-хранилище для ресурса
 func NewREST(
 	scheme *runtime.Scheme,
 	optsGetter generic.RESTOptionsGetter,
@@ -41,22 +43,23 @@ func NewREST(
 		resourcePrefix: resourceName,
 	}
 
-	// Use the internal group version
+	// Используем внутреннюю группу версии
 	groupVersion := wardle.SchemeGroupVersion
 
-	expectedGVK := groupVersion.WithKind(kindName)
-	expectedListGVK := groupVersion.WithKind(kindName + "List")
+	// Создаем GVK для ресурса и списка
+	versionedGVK := groupVersion.WithKind(kindName)
+	versionedListGVK := groupVersion.WithKind(kindName + "List")
 
 	store := &genericregistry.Store{
 		NewFunc: func() runtime.Object {
-			obj, err := scheme.New(expectedGVK)
+			obj, err := scheme.New(versionedGVK)
 			if err != nil {
 				panic(err)
 			}
 			return obj
 		},
 		NewListFunc: func() runtime.Object {
-			obj, err := scheme.New(expectedListGVK)
+			obj, err := scheme.New(versionedListGVK)
 			if err != nil {
 				panic(err)
 			}
@@ -89,8 +92,21 @@ func NewREST(
 		return nil, err
 	}
 
-	// Set the GVK for the discovery endpoint to the versioned GVK
-	versionedGVK := schema.GroupVersion{Group: wardle.GroupName, Version: "v1alpha1"}.WithKind(kindName)
+	// Устанавливаем Decorator для установки TypeMeta
+	store.Decorator = func(obj runtime.Object) {
+		// Устанавливаем GVK для объекта
+		obj.GetObjectKind().SetGroupVersionKind(versionedGVK)
+
+		// Если объект является списком, устанавливаем GVK для списка и для каждого элемента
+		if list, ok := obj.(*wardle.ApplicationList); ok {
+			list.TypeMeta.Kind = kindName + "List"
+			list.TypeMeta.APIVersion = versionedGVK.GroupVersion().String()
+			for i := range list.Items {
+				list.Items[i].TypeMeta.Kind = kindName
+				list.Items[i].TypeMeta.APIVersion = versionedGVK.GroupVersion().String()
+			}
+		}
+	}
 
 	return &registry.REST{
 		Store: store,
