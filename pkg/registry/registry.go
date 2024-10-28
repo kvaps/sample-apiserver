@@ -7,20 +7,20 @@ import (
 	genericregistry "k8s.io/apiserver/pkg/registry/generic/registry"
 )
 
-// REST реализует RESTStorage для API-сервисов с использованием etcd
+// REST implements a RESTStorage for API services against etcd
 type REST struct {
 	*genericregistry.Store
 	GVK schema.GroupVersionKind
 }
 
-// Реализация интерфейса GroupVersionKindProvider
+// Implement the GroupVersionKindProvider interface
 func (r *REST) GroupVersionKind(containingGV schema.GroupVersion) schema.GroupVersionKind {
 	return r.GVK
 }
 
-// RESTInPeace — это простая функция, которая паникает при ошибке
-// В противном случае возвращает данное хранилище. Предназначена
-// для оборачивания wardle хранилищ.
+// RESTInPeace is just a simple function that panics on error.
+// Otherwise returns the given storage object. It is meant to be
+// a wrapper for wardle registries.
 func RESTInPeace(storage *REST, err error) *REST {
 	if err != nil {
 		err = fmt.Errorf("unable to create REST storage for a resource due to %v, will die", err)

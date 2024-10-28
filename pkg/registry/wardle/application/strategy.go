@@ -1,3 +1,19 @@
+/*
+Copyright 2017 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package application
 
 import (
@@ -7,7 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/apiserver/pkg/registry/generic"
 	"k8s.io/apiserver/pkg/storage"
@@ -17,12 +32,12 @@ import (
 	"k8s.io/sample-apiserver/pkg/apis/wardle"
 )
 
-// NewStrategy создает и возвращает экземпляр applicationStrategy
+// NewStrategy creates and returns an applicationStrategy instance
 func NewStrategy(typer runtime.ObjectTyper, resourceName string) applicationStrategy {
 	return applicationStrategy{typer, names.SimpleNameGenerator, resourceName}
 }
 
-// GetAttrs возвращает labels.Set, fields.Set и ошибку, если переданный объект не является Application
+// GetAttrs returns labels.Set, fields.Set, and error in case the given runtime.Object is not a Application
 func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, error) {
 	apiserver, ok := obj.(*wardle.Application)
 	if !ok {
@@ -31,7 +46,8 @@ func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, error) {
 	return labels.Set(apiserver.ObjectMeta.Labels), SelectableFields(apiserver), nil
 }
 
-// MatchApplication фильтр, используемый backend etcd для просмотра событий
+// MatchApplication is the filter used by the generic etcd backend to watch events
+// from etcd to clients of the apiserver only interested in specific labels/fields.
 func MatchApplication(label labels.Selector, field fields.Selector) storage.SelectionPredicate {
 	return storage.SelectionPredicate{
 		Label:    label,
@@ -40,7 +56,7 @@ func MatchApplication(label labels.Selector, field fields.Selector) storage.Sele
 	}
 }
 
-// SelectableFields возвращает набор полей, представляющих объект.
+// SelectableFields returns a field set that represents the object.
 func SelectableFields(obj *wardle.Application) fields.Set {
 	return generic.ObjectMetaFieldsSet(&obj.ObjectMeta, true)
 }
@@ -66,12 +82,7 @@ func (applicationStrategy) Validate(ctx context.Context, obj runtime.Object) fie
 	return validation.ValidateApplication(application)
 }
 
-// Реализуем метод ObjectKinds для соответствия интерфейсу RESTCreateStrategy, RESTUpdateStrategy и RESTDeleteStrategy
-func (s applicationStrategy) ObjectKinds(obj runtime.Object) ([]schema.GroupVersionKind, bool, error) {
-	return s.ObjectTyper.ObjectKinds(obj)
-}
-
-// WarningsOnCreate возвращает предупреждения для создания данного объекта.
+// WarningsOnCreate returns warnings for the creation of the given object.
 func (applicationStrategy) WarningsOnCreate(ctx context.Context, obj runtime.Object) []string {
 	return nil
 }
@@ -91,7 +102,7 @@ func (applicationStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.
 	return field.ErrorList{}
 }
 
-// WarningsOnUpdate возвращает предупреждения для данного обновления.
+// WarningsOnUpdate returns warnings for the given update.
 func (applicationStrategy) WarningsOnUpdate(ctx context.Context, obj, old runtime.Object) []string {
 	return nil
 }
