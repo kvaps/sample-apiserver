@@ -24,6 +24,7 @@ package v1alpha1
 import (
 	unsafe "unsafe"
 
+	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	apps "k8s.io/sample-apiserver/pkg/apis/apps"
@@ -135,7 +136,7 @@ func Convert_apps_ApplicationList_To_v1alpha1_ApplicationList(in *apps.Applicati
 
 func autoConvert_v1alpha1_ApplicationSpec_To_apps_ApplicationSpec(in *ApplicationSpec, out *apps.ApplicationSpec, s conversion.Scope) error {
 	out.Version = in.Version
-	out.Values = in.Values
+	out.Values = (*v1.JSON)(unsafe.Pointer(in.Values))
 	return nil
 }
 
@@ -146,7 +147,7 @@ func Convert_v1alpha1_ApplicationSpec_To_apps_ApplicationSpec(in *ApplicationSpe
 
 func autoConvert_apps_ApplicationSpec_To_v1alpha1_ApplicationSpec(in *apps.ApplicationSpec, out *ApplicationSpec, s conversion.Scope) error {
 	out.Version = in.Version
-	out.Values = in.Values
+	out.Values = (*v1.JSON)(unsafe.Pointer(in.Values))
 	return nil
 }
 

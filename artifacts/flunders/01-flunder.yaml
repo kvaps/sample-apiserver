@@ -1,9 +1,27 @@
 apiVersion: apps.cozystack.io/v1alpha1
 kind: Kubernetes
 metadata:
-  name: my-first-cluster
-  labels:
-    sample-label: "true"
+  name: kubernetes-test
 spec:
-  values: "asdasd"
-  version: "0.1.3"
+  version: 0.12.0
+  values:
+    addons:
+      certManager:
+        enabled: false
+      fluxcd:
+        enabled: false
+      ingressNginx:
+        enabled: false
+    controlPlane:
+      replicas: 2
+    host: ""
+    nodeGroups:
+      md0:
+        ephemeralStorage: 20Gi
+        maxReplicas: 10
+        minReplicas: 0
+        resources:
+          cpu: 2
+          memory: 1024Mi
+        roles:
+        - ingress-nginx

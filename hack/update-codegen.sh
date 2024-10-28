@@ -43,6 +43,7 @@ fi
 #)
 
 kube::codegen::gen_openapi \
+    --extra-pkgs "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
     --output-dir "${SCRIPT_ROOT}/pkg/generated/openapi" \
     --output-pkg "${THIS_PKG}/pkg/generated/openapi" \
     --report-filename "${report_filename:-"/dev/null"}" \

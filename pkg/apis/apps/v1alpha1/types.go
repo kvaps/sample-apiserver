@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -33,8 +34,8 @@ type ApplicationList struct {
 // ApplicationSpec is the specification of a Application.
 type ApplicationSpec struct {
 	Version string `json:"version,omitempty" protobuf:"bytes,1,opt,name=version"`
-	//Values  *apiextensionsv1.JSON `json:"values,omitempty" protobuf:"bytes,2,opt,name=values"`
-	Values string `json:"values,omitempty" protobuf:"bytes,2,opt,name=values"`
+	// +optional
+	Values *apiextensionsv1.JSON `json:"values,omitempty" protobuf:"bytes,2,opt,name=values"`
 }
 
 // ApplicationStatus is the status of a Application.

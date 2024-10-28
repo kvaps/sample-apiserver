@@ -7,14 +7,16 @@ go 1.23.0
 godebug default=go1.23
 
 require (
+	github.com/emicklei/go-restful/v3 v3.11.0
 	github.com/google/gofuzz v1.2.0
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
-	k8s.io/apimachinery v0.0.0-20241018042225-cfee47580787
-	k8s.io/apiserver v0.0.0-20241018044901-1ea7befac323
-	k8s.io/client-go v0.0.0-20241018042940-23900f492969
-	k8s.io/code-generator v0.0.0-20241018043834-83b856b3660b
-	k8s.io/component-base v0.0.0-20241018044032-28853230c294
+	k8s.io/apiextensions-apiserver v0.31.2
+	k8s.io/apimachinery v0.31.2
+	k8s.io/apiserver v0.31.2
+	k8s.io/client-go v0.31.2
+	k8s.io/code-generator v0.31.2
+	k8s.io/component-base v0.31.2
 	k8s.io/kube-openapi v0.0.0-20240827152857-f7e401e7b4c2
 	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1
@@ -31,7 +33,6 @@ require (
 	github.com/coreos/go-semver v0.3.1 // indirect
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
@@ -49,6 +50,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0 // indirect
+	github.com/imdario/mergo v0.3.6 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
@@ -99,10 +101,10 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/api v0.0.0-20241018042523-2be23f6c5a71 // indirect
+	k8s.io/api v0.31.2 // indirect
 	k8s.io/gengo/v2 v2.0.0-20240911193312-2b36238f13e9 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
-	k8s.io/kms v0.0.0-20241018044332-f1456fc96237 // indirect
+	k8s.io/kms v0.31.2 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.31.0 // indirect
 	sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect

@@ -17,6 +17,7 @@ limitations under the License.
 // +k8s:openapi-gen=true
 // +k8s:deepcopy-gen=package
 // +k8s:conversion-gen=k8s.io/sample-apiserver/pkg/apis/apps
+// +k8s:conversion-gen=k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 // +k8s:defaulter-gen=TypeMeta
 // +groupName=apps.cozystack.io
 
