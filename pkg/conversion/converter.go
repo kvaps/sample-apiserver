@@ -2,7 +2,6 @@ package conversion
 
 import (
 	helmv2 "github.com/fluxcd/helm-controller/api/v2"
-	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	appsv1alpha1 "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1"
 )
@@ -53,9 +52,7 @@ func ConvertApplicationToHelmRelease(app *appsv1alpha1.Application) (*helmv2.Hel
 					},
 				},
 			},
-			Values: &apiextensionsv1.JSON{
-				Raw: app.Spec.Values,
-			},
+			Values: app.Spec.Values,
 		},
 	}
 	return hr, nil

@@ -1,10 +1,10 @@
 package registry
 
 import (
-	"fmt"
-
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	genericregistry "k8s.io/apiserver/pkg/registry/generic/registry"
+	"k8s.io/apiserver/pkg/registry/rest"
+	"k8s.io/sample-apiserver/pkg/registry/apps/application"
 )
 
 // REST implements a RESTStorage for API services against etcd
@@ -18,13 +18,7 @@ func (r *REST) GroupVersionKind(containingGV schema.GroupVersion) schema.GroupVe
 	return r.GVK
 }
 
-// RESTInPeace is just a simple function that panics on error.
-// Otherwise returns the given storage object. It is meant to be
-// a wrapper for apps registries.
-func RESTInPeace(storage *REST, err error) *REST {
-	if err != nil {
-		err = fmt.Errorf("unable to create REST storage for a resource due to %v, will die", err)
-		panic(err)
-	}
-	return storage
+// RESTInPeace создает REST для Application
+func RESTInPeace(r *application.REST) rest.Storage {
+	return r
 }

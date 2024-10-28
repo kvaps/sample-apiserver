@@ -17,12 +17,15 @@ limitations under the License.
 package apiserver
 
 import (
+	"fmt"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apiserver/pkg/registry/rest"
 	genericapiserver "k8s.io/apiserver/pkg/server"
+	"k8s.io/client-go/dynamic"
 
 	"k8s.io/sample-apiserver/pkg/apis/apps"
 	"k8s.io/sample-apiserver/pkg/apis/apps/install"
@@ -35,7 +38,7 @@ var (
 	Scheme = runtime.NewScheme()
 	// Codecs provides methods for retrieving codecs and serializers for specific
 	// versions and content types.
-	Codecs              = serializer.NewCodecFactory(Scheme)
+	Codecs            = serializer.NewCodecFactory(Scheme)
 	AppsComponentName = "apps"
 )
 
@@ -106,23 +109,29 @@ func (c completedConfig) New() (*AppsServer, error) {
 
 	apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(apps.GroupName, Scheme, metav1.ParameterCodec, Codecs)
 
+	// Создание динамического клиента для HelmRelease
+	dynamicClient, err := dynamic.NewForConfig(c.GenericConfig.LoopbackClientConfig)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create dynamic client: %v", err)
+	}
+
 	v1alpha1storage := map[string]rest.Storage{}
 	v1alpha1storage["kuberneteses"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "kuberneteses", "kubernetes", "Kubernetes"))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "Kubernetes"}))
 	v1alpha1storage["postgreses"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "postgreses", "postgres", "Postgres"))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "Postgres"}))
 	v1alpha1storage["redises"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "redises", "redis", "Redis"))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "Redis"}))
 	v1alpha1storage["kafkas"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "kafkas", "kafka", "Kafka"))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "Kafka"}))
 	v1alpha1storage["rabbitmqs"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "rabbitmqs", "rabbitmq", "RabbitMQ"))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "RabbitMQ"}))
 	v1alpha1storage["ferretdbs"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "ferretdbs", "ferretdb", "FerretDB"))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "FerretDB"}))
 	v1alpha1storage["vmdisks"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "vmdisks", "vmdisk", "VMDisk"))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "VMDisk"}))
 	v1alpha1storage["vminstances"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter, "vminstances", "vminstance", "VMInstance"))
+		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "VMInstance"}))
 
 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
 
