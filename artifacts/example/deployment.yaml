@@ -22,4 +22,4 @@ spec:
         # or
         # docker pull registry.k8s.io/e2e-test-images/sample-apiserver:1.17.4
         # docker tag registry.k8s.io/e2e-test-images/sample-apiserver:1.17.4 kube-sample-apiserver:latest
-        image: ghcr.io/kvaps/test:apiserver1@sha256:c37d3c31af7abb6d5832815fa07e20278090cf159d27ffe953925e076786ba22
+        image: ghcr.io/kvaps/test:apiserver1@sha256:33b28df1fd62bd8bdc0d7b2ef09913ae3c4a892deda9e2efeb440d9465615b48

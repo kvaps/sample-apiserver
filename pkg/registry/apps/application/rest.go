@@ -88,16 +88,18 @@ func (r *REST) Create(ctx context.Context, obj runtime.Object, createValidation 
 	return convertedApp, nil
 }
 
-// Get получает Application, транслируя его из HelmRelease
+// Get получает Application, транслируя его из HelmRelease, и возвращает как unstructured объект
 func (r *REST) Get(ctx context.Context, name string, options *v1.GetOptions) (runtime.Object, error) {
 	log.Printf("Attempting to retrieve resource %s of kind %s in namespace tenant-kvaps", name, r.gvr.Resource)
 
+	// Получаем HelmRelease как unstructured
 	hr, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace("tenant-kvaps").Get(ctx, name, *options)
 	if err != nil {
 		log.Printf("Error retrieving HelmRelease for resource %s: %v", name, err)
 		return nil, err
 	}
 
+	// Конвертация HelmRelease в Application
 	var app appsv1alpha1.Application
 	err = r.ConvertHelmReleaseToApplication(hr, &app)
 	if err != nil {
@@ -105,8 +107,15 @@ func (r *REST) Get(ctx context.Context, name string, options *v1.GetOptions) (ru
 		return nil, fmt.Errorf("conversion error: %v", err)
 	}
 
-	log.Printf("Successfully retrieved and converted resource %s of kind %s", name, r.gvr.Resource)
-	return &app, nil
+	// Конвертация Application в unstructured.Unstructured
+	unstructuredApp, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&app)
+	if err != nil {
+		log.Printf("Failed to convert Application to unstructured for resource %s: %v", name, err)
+		return nil, fmt.Errorf("failed to convert Application to unstructured: %v", err)
+	}
+
+	log.Printf("Successfully retrieved and converted resource %s of kind %s to unstructured", name, r.gvr.Resource)
+	return &unstructured.Unstructured{Object: unstructuredApp}, nil
 }
 
 // List получает список Application ресурсов, транслируя их из HelmRelease
