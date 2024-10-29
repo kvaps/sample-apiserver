@@ -202,6 +202,14 @@ func (r *REST) Kind() string {
 	return r.GVK.Kind
 }
 
+func (r *REST) GroupVersionKind(schema.GroupVersion) schema.GroupVersionKind {
+	return schema.GroupVersionKind{
+		Group:   r.GVK.Group,
+		Version: r.GVK.Version,
+		Kind:    r.kindName,
+	}
+}
+
 // ConvertHelmReleaseToApplication конвертирует HelmRelease в Application
 func (r *REST) ConvertHelmReleaseToApplication(hr *unstructured.Unstructured, app *appsv1alpha1.Application) error {
 	log.Printf("Converting HelmRelease to Application for resource %s", hr.GetName())
