@@ -26,8 +26,6 @@ import (
 	"github.com/spf13/cobra"
 
 	restful "github.com/emicklei/go-restful/v3"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/version"
@@ -47,8 +45,6 @@ import (
 	sampleopenapi "k8s.io/sample-apiserver/pkg/generated/openapi"
 	netutils "k8s.io/utils/net"
 )
-
-const defaultEtcdPathPrefix = "/registry/apps.cozystack.io"
 
 // AppsServerOptions contains state for master/api server
 type AppsServerOptions struct {
@@ -79,14 +75,14 @@ func AppsVersionToKubeVersion(ver *version.Version) *version.Version {
 func NewAppsServerOptions(out, errOut io.Writer) *AppsServerOptions {
 	o := &AppsServerOptions{
 		RecommendedOptions: genericoptions.NewRecommendedOptions(
-			defaultEtcdPathPrefix,
+			"",
 			apiserver.Codecs.LegacyCodec(v1alpha1.SchemeGroupVersion),
 		),
 
 		StdOut: out,
 		StdErr: errOut,
 	}
-	o.RecommendedOptions.Etcd.StorageConfig.EncodeVersioner = runtime.NewMultiGroupVersioner(v1alpha1.SchemeGroupVersion, schema.GroupKind{Group: v1alpha1.GroupName})
+	o.RecommendedOptions.Etcd = nil
 	return o
 }
 
