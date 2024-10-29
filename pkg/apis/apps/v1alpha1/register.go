@@ -48,9 +48,6 @@ func init() {
 
 // Adds the list of known types to the given scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Application"), &Application{})
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("ApplicationList"), &ApplicationList{})
-
 	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Kubernetes"), &Application{})
 	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("KubernetesList"), &ApplicationList{})
 	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Postgres"), &Application{})
