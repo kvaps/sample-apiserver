@@ -21,11 +21,9 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"strings"
 
 	"github.com/spf13/cobra"
 
-	restful "github.com/emicklei/go-restful/v3"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/version"
@@ -187,15 +185,9 @@ func (o *AppsServerOptions) Config() (*apiserver.Config, error) {
 	serverConfig.OpenAPIConfig.Info.Title = "Apps"
 	serverConfig.OpenAPIConfig.Info.Version = "0.1"
 
-	// Assign custom GetOperationIDAndTags function
-	serverConfig.OpenAPIConfig.GetOperationIDAndTags = customGetOperationIDAndTags
-
 	serverConfig.OpenAPIV3Config = genericapiserver.DefaultOpenAPIV3Config(sampleopenapi.GetOpenAPIDefinitions, openapi.NewDefinitionNamer(apiserver.Scheme))
 	serverConfig.OpenAPIV3Config.Info.Title = "Apps"
 	serverConfig.OpenAPIV3Config.Info.Version = "0.1"
-
-	// Assign custom GetOperationIDAndTags function
-	serverConfig.OpenAPIV3Config.GetOperationIDAndTags = customGetOperationIDAndTags
 
 	serverConfig.FeatureGate = utilversion.DefaultComponentGlobalsRegistry.FeatureGateFor(utilversion.DefaultKubeComponent)
 	serverConfig.EffectiveVersion = utilversion.DefaultComponentGlobalsRegistry.EffectiveVersionFor(apiserver.AppsComponentName)
@@ -209,26 +201,6 @@ func (o *AppsServerOptions) Config() (*apiserver.Config, error) {
 		ExtraConfig:   apiserver.ExtraConfig{},
 	}
 	return config, nil
-}
-
-func customGetOperationIDAndTags(r *restful.Route) (string, []string, error) {
-	method := strings.ToLower(r.Method)
-	path := r.Path
-	// Sanitize path to replace variables and slashes
-	path = strings.ReplaceAll(path, "{", "_by_")
-	path = strings.ReplaceAll(path, "}", "")
-	path = strings.ReplaceAll(path, "/", "_")
-	path = strings.ReplaceAll(path, "__", "_")
-	operationID := fmt.Sprintf("%s_%s", method, path)
-	operationID = strings.Trim(operationID, "_")
-
-	var tags []string
-	if t, ok := r.Metadata["tags"].([]string); ok {
-		tags = t
-	} else {
-		tags = []string{}
-	}
-	return operationID, tags, nil
 }
 
 // RunAppsServer starts a new AppsServer given AppsServerOptions
