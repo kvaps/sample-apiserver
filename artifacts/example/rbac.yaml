@@ -1,7 +1,7 @@
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: aggregated-apiserver-clusterrole
+  name: cozystack-api
 rules:
 - apiGroups: [""]
   resources: ["namespaces"]
@@ -12,3 +12,6 @@ rules:
 - apiGroups: ["flowcontrol.apiserver.k8s.io"]
   resources: ['prioritylevelconfigurations', 'flowschemas']
   verbs: ['list', 'watch']
+- apiGroups: ['helm.toolkit.fluxcd.io']
+  resources: ['*']
+  verbs: ['*']

@@ -1,25 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: wardle-server
-  namespace: wardle
+  name: cozystack-api
+  namespace: cozy-system
   labels:
-    apiserver: "true"
+    app: cozystack-api
 spec:
   replicas: 1
   selector:
     matchLabels:
-      apiserver: "true"
+      app: cozystack-api
   template:
     metadata:
       labels:
-        apiserver: "true"
+        app: cozystack-api
     spec:
-      serviceAccountName: apiserver
+      serviceAccountName: cozystack-api
       containers:
-      - name: wardle-server
-        # build from staging/src/k8s.io/sample-apiserver/artifacts/simple-image/Dockerfile
-        # or
-        # docker pull registry.k8s.io/e2e-test-images/sample-apiserver:1.17.4
-        # docker tag registry.k8s.io/e2e-test-images/sample-apiserver:1.17.4 kube-sample-apiserver:latest
+      - name: cozystack-api
         image: ghcr.io/kvaps/test:apiserver1@sha256:33b28df1fd62bd8bdc0d7b2ef09913ae3c4a892deda9e2efeb440d9465615b48

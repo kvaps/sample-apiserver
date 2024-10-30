@@ -2,6 +2,7 @@ apiVersion: apps.cozystack.io/v1alpha1
 kind: Kubernetes
 metadata:
   name: kubernetes-test
+  namespace: tenant-kvaps
 spec:
   version: 0.12.0
   values:
