@@ -14,14 +14,31 @@ func ConvertHelmReleaseToApplication(hr *helmv2.HelmRelease) (*appsv1alpha1.Appl
 			Kind:       hr.Spec.Chart.Spec.Chart,
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      hr.Name,
-			Namespace: hr.Namespace,
+			Name:              hr.Name,
+			Namespace:         hr.Namespace,
+			CreationTimestamp: hr.CreationTimestamp,
+			DeletionTimestamp: hr.DeletionTimestamp,
 		},
-		Spec: appsv1alpha1.ApplicationSpec{
-			Version: hr.Spec.Chart.Spec.Version,
-			Values:  hr.Spec.Values,
+		Spec:       hr.Spec.Values,
+		AppVersion: hr.Spec.Chart.Spec.Version,
+		Status: appsv1alpha1.ApplicationStatus{
+			Version: hr.Status.LastAttemptedRevision,
 		},
 	}
+	conditions := []metav1.Condition{}
+	for _, hrCondition := range hr.GetConditions() {
+		if hrCondition.Type == "Ready" || hrCondition.Type == "Released" {
+			conditions = append(conditions,
+				metav1.Condition{
+					LastTransitionTime: hrCondition.LastTransitionTime,
+					Reason:             hrCondition.Reason,
+					Message:            hrCondition.Message,
+					Status:             hrCondition.Status,
+					Type:               hrCondition.Type,
+				})
+		}
+	}
+	app.SetConditions(conditions)
 	return app, nil
 }
 
@@ -43,7 +60,7 @@ func ConvertApplicationToHelmRelease(app *appsv1alpha1.Application) (*helmv2.Hel
 			Chart: &helmv2.HelmChartTemplate{
 				Spec: helmv2.HelmChartTemplateSpec{
 					Chart:             "kubernetes",
-					Version:           app.Spec.Version,
+					Version:           app.AppVersion,
 					ReconcileStrategy: "Revision",
 					SourceRef: helmv2.CrossNamespaceObjectReference{
 						Kind:      "HelmRepository",
@@ -52,7 +69,7 @@ func ConvertApplicationToHelmRelease(app *appsv1alpha1.Application) (*helmv2.Hel
 					},
 				},
 			},
-			Values: app.Spec.Values,
+			Values: app.Spec,
 		},
 	}
 	return hr, nil

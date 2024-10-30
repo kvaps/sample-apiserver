@@ -31,15 +31,22 @@ type ApplicationList struct {
 	Items []Application `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
-// ApplicationSpec is the specification of a Application.
-type ApplicationSpec struct {
-	Version string `json:"version,omitempty" protobuf:"bytes,1,opt,name=version"`
-	// +optional
-	Values *apiextensionsv1.JSON `json:"values,omitempty" protobuf:"bytes,2,opt,name=values"`
-}
-
 // ApplicationStatus is the status of a Application.
 type ApplicationStatus struct {
+	// Conditions holds the conditions for the Application.
+	// +optional
+	Version    string             `json:"version,omitempty"`
+	Conditions []metav1.Condition `json:"conditions,omitempty"`
+}
+
+// GetConditions returns the status conditions of the object.
+func (in Application) GetConditions() []metav1.Condition {
+	return in.Status.Conditions
+}
+
+// SetConditions sets the status conditions on the object.
+func (in *Application) SetConditions(conditions []metav1.Condition) {
+	in.Status.Conditions = conditions
 }
 
 // +genclient
@@ -50,6 +57,8 @@ type Application struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
-	Spec   ApplicationSpec   `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
-	Status ApplicationStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
+	AppVersion string `json:"appVersion,omitempty" protobuf:"bytes,1,opt,name=version"`
+	// +optional
+	Spec   *apiextensionsv1.JSON `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	Status ApplicationStatus     `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }

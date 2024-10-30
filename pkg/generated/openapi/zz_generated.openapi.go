@@ -112,7 +112,6 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"k8s.io/apimachinery/pkg/version.Info":                                                       schema_k8sio_apimachinery_pkg_version_Info(ref),
 		"k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.Application":                                 schema_pkg_apis_apps_v1alpha1_Application(ref),
 		"k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.ApplicationList":                             schema_pkg_apis_apps_v1alpha1_ApplicationList(ref),
-		"k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.ApplicationSpec":                             schema_pkg_apis_apps_v1alpha1_ApplicationSpec(ref),
 		"k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.ApplicationStatus":                           schema_pkg_apis_apps_v1alpha1_ApplicationStatus(ref),
 	}
 }
@@ -4211,10 +4210,15 @@ func schema_pkg_apis_apps_v1alpha1_Application(ref common.ReferenceCallback) com
 							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
 						},
 					},
+					"appVersion": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.ApplicationSpec"),
+							Ref: ref("k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON"),
 						},
 					},
 					"status": {
@@ -4227,7 +4231,7 @@ func schema_pkg_apis_apps_v1alpha1_Application(ref common.ReferenceCallback) com
 			},
 		},
 		Dependencies: []string{
-			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.ApplicationSpec", "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.ApplicationStatus"},
+			"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.ApplicationStatus"},
 	}
 }
 
@@ -4280,39 +4284,37 @@ func schema_pkg_apis_apps_v1alpha1_ApplicationList(ref common.ReferenceCallback)
 	}
 }
 
-func schema_pkg_apis_apps_v1alpha1_ApplicationSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "ApplicationSpec is the specification of a Application.",
-				Type:        []string{"object"},
-				Properties: map[string]spec.Schema{
-					"version": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-					"values": {
-						SchemaProps: spec.SchemaProps{
-							Ref: ref("k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON"),
-						},
-					},
-				},
-			},
-		},
-		Dependencies: []string{
-			"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON"},
-	}
-}
-
 func schema_pkg_apis_apps_v1alpha1_ApplicationStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "ApplicationStatus is the status of a Application.",
 				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"version": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Conditions holds the conditions for the Application.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"conditions": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.Condition"),
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.Condition"},
 	}
 }
