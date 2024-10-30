@@ -44,11 +44,3 @@ kube::codegen::gen_openapi \
     ${update_report:+"${update_report}"} \
     --boilerplate "${SCRIPT_ROOT}/hack/boilerplate.go.txt" \
     "${SCRIPT_ROOT}/pkg/apis"
-
-kube::codegen::gen_client \
-    --with-watch \
-    --with-applyconfig \
-    --output-dir "${SCRIPT_ROOT}/pkg/generated" \
-    --output-pkg "${THIS_PKG}/pkg/generated" \
-    --boilerplate "${SCRIPT_ROOT}/hack/boilerplate.go.txt" \
-    "${SCRIPT_ROOT}/pkg/apis"

@@ -18,4 +18,4 @@ spec:
       serviceAccountName: cozystack-api
       containers:
       - name: cozystack-api
-        image: ghcr.io/kvaps/test:apiserver1@sha256:77fe43d3bd9ad38d4b4f7a7624cf9a3bd991808c886924468cddcdebf2b25abe
+        image: ghcr.io/kvaps/test:apiserver1@sha256:6434089553e66f84495fa3cf90715fea90d4218daf7230ef08191b7d5d237cac

@@ -24,10 +24,12 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1"
+	"github.com/aenix.io/cozystack/cozystack-api/pkg/apiserver"
+	sampleopenapi "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/openapi"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/version"
-	"k8s.io/apiserver/pkg/admission"
 	"k8s.io/apiserver/pkg/endpoints/openapi"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericoptions "k8s.io/apiserver/pkg/server/options"
@@ -35,12 +37,6 @@ import (
 	utilversion "k8s.io/apiserver/pkg/util/version"
 	"k8s.io/component-base/featuregate"
 	baseversion "k8s.io/component-base/version"
-	"github.com/aenix.io/cozystack/cozystack-api/pkg/admission/appsinitializer"
-	"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1"
-	"github.com/aenix.io/cozystack/cozystack-api/pkg/apiserver"
-	clientset "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/clientset/versioned"
-	informers "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/informers/externalversions"
-	sampleopenapi "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/openapi"
 	netutils "k8s.io/utils/net"
 )
 
@@ -48,9 +44,8 @@ import (
 type AppsServerOptions struct {
 	RecommendedOptions *genericoptions.RecommendedOptions
 
-	SharedInformerFactory informers.SharedInformerFactory
-	StdOut                io.Writer
-	StdErr                io.Writer
+	StdOut io.Writer
+	StdErr io.Writer
 
 	AlternateDNS []string
 }
@@ -169,16 +164,6 @@ func (o *AppsServerOptions) Config() (*apiserver.Config, error) {
 		return nil, fmt.Errorf("error creating self-signed certificates: %v", err)
 	}
 
-	o.RecommendedOptions.ExtraAdmissionInitializers = func(c *genericapiserver.RecommendedConfig) ([]admission.PluginInitializer, error) {
-		client, err := clientset.NewForConfig(c.LoopbackClientConfig)
-		if err != nil {
-			return nil, err
-		}
-		informerFactory := informers.NewSharedInformerFactory(client, c.LoopbackClientConfig.Timeout)
-		o.SharedInformerFactory = informerFactory
-		return []admission.PluginInitializer{appsinitializer.New(informerFactory)}, nil
-	}
-
 	serverConfig := genericapiserver.NewRecommendedConfig(apiserver.Codecs)
 
 	serverConfig.OpenAPIConfig = genericapiserver.DefaultOpenAPIConfig(sampleopenapi.GetOpenAPIDefinitions, openapi.NewDefinitionNamer(apiserver.Scheme))
@@ -217,7 +202,6 @@ func (o AppsServerOptions) RunAppsServer(ctx context.Context) error {
 
 	server.GenericAPIServer.AddPostStartHookOrDie("start-sample-server-informers", func(context genericapiserver.PostStartHookContext) error {
 		config.GenericConfig.SharedInformerFactory.Start(context.Done())
-		o.SharedInformerFactory.Start(context.Done())
 		return nil
 	})
 
