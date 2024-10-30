@@ -110,9 +110,9 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"k8s.io/apimachinery/pkg/runtime.TypeMeta":                                                   schema_k8sio_apimachinery_pkg_runtime_TypeMeta(ref),
 		"k8s.io/apimachinery/pkg/runtime.Unknown":                                                    schema_k8sio_apimachinery_pkg_runtime_Unknown(ref),
 		"k8s.io/apimachinery/pkg/version.Info":                                                       schema_k8sio_apimachinery_pkg_version_Info(ref),
-		"k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.Application":                                 schema_pkg_apis_apps_v1alpha1_Application(ref),
-		"k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.ApplicationList":                             schema_pkg_apis_apps_v1alpha1_ApplicationList(ref),
-		"k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.ApplicationStatus":                           schema_pkg_apis_apps_v1alpha1_ApplicationStatus(ref),
+		"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.Application":                                 schema_pkg_apis_apps_v1alpha1_Application(ref),
+		"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.ApplicationList":                             schema_pkg_apis_apps_v1alpha1_ApplicationList(ref),
+		"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.ApplicationStatus":                           schema_pkg_apis_apps_v1alpha1_ApplicationStatus(ref),
 	}
 }
 
@@ -4224,14 +4224,14 @@ func schema_pkg_apis_apps_v1alpha1_Application(ref common.ReferenceCallback) com
 					"status": {
 						SchemaProps: spec.SchemaProps{
 							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.ApplicationStatus"),
+							Ref:     ref("github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.ApplicationStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.ApplicationStatus"},
+			"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.ApplicationStatus"},
 	}
 }
 
@@ -4269,7 +4269,7 @@ func schema_pkg_apis_apps_v1alpha1_ApplicationList(ref common.ReferenceCallback)
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
 										Default: map[string]interface{}{},
-										Ref:     ref("k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.Application"),
+										Ref:     ref("github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.Application"),
 									},
 								},
 							},
@@ -4280,7 +4280,7 @@ func schema_pkg_apis_apps_v1alpha1_ApplicationList(ref common.ReferenceCallback)
 			},
 		},
 		Dependencies: []string{
-			"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1.Application"},
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.Application"},
 	}
 }
 

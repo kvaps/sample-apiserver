@@ -5,7 +5,7 @@ import (
 
 	helmv2 "github.com/fluxcd/helm-controller/api/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	appsv1alpha1 "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1"
+	appsv1alpha1 "github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1"
 )
 
 // ConvertHelmReleaseToApplication преобразует HelmRelease в Application

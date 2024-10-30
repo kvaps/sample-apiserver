@@ -25,7 +25,7 @@ import (
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
-	appsv1alpha1 "k8s.io/sample-apiserver/pkg/generated/clientset/versioned/typed/apps/v1alpha1"
+	appsv1alpha1 "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/clientset/versioned/typed/apps/v1alpha1"
 )
 
 type Interface interface {

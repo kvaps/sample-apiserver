@@ -25,9 +25,9 @@ import (
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	gentype "k8s.io/client-go/gentype"
-	appsv1alpha1 "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1"
-	applyconfigurationappsv1alpha1 "k8s.io/sample-apiserver/pkg/generated/applyconfiguration/apps/v1alpha1"
-	scheme "k8s.io/sample-apiserver/pkg/generated/clientset/versioned/scheme"
+	appsv1alpha1 "github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1"
+	applyconfigurationappsv1alpha1 "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/applyconfiguration/apps/v1alpha1"
+	scheme "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/clientset/versioned/scheme"
 )
 
 // ApplicationsGetter has a method to return a ApplicationInterface.

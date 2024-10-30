@@ -4,7 +4,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	genericregistry "k8s.io/apiserver/pkg/registry/generic/registry"
 	"k8s.io/apiserver/pkg/registry/rest"
-	"k8s.io/sample-apiserver/pkg/registry/apps/application"
+	"github.com/aenix.io/cozystack/cozystack-api/pkg/registry/apps/application"
 )
 
 // REST implements a RESTStorage for API services against etcd

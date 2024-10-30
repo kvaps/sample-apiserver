@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/api/apitesting/roundtrip"
-	appsfuzzer "k8s.io/sample-apiserver/pkg/apis/apps/fuzzer"
+	appsfuzzer "github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/fuzzer"
 )
 
 func TestRoundTripTypes(t *testing.T) {

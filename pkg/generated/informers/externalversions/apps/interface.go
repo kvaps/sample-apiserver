@@ -19,8 +19,8 @@ limitations under the License.
 package apps
 
 import (
-	internalinterfaces "k8s.io/sample-apiserver/pkg/generated/informers/externalversions/internalinterfaces"
-	v1alpha1 "k8s.io/sample-apiserver/pkg/generated/informers/externalversions/apps/v1alpha1"
+	internalinterfaces "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/informers/externalversions/apps/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

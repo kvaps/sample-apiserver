@@ -35,12 +35,12 @@ import (
 	utilversion "k8s.io/apiserver/pkg/util/version"
 	"k8s.io/component-base/featuregate"
 	baseversion "k8s.io/component-base/version"
-	"k8s.io/sample-apiserver/pkg/admission/appsinitializer"
-	"k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1"
-	"k8s.io/sample-apiserver/pkg/apiserver"
-	clientset "k8s.io/sample-apiserver/pkg/generated/clientset/versioned"
-	informers "k8s.io/sample-apiserver/pkg/generated/informers/externalversions"
-	sampleopenapi "k8s.io/sample-apiserver/pkg/generated/openapi"
+	"github.com/aenix.io/cozystack/cozystack-api/pkg/admission/appsinitializer"
+	"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1"
+	"github.com/aenix.io/cozystack/cozystack-api/pkg/apiserver"
+	clientset "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/clientset/versioned"
+	informers "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/informers/externalversions"
+	sampleopenapi "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/openapi"
 	netutils "k8s.io/utils/net"
 )
 

@@ -28,8 +28,8 @@ import (
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	testing "k8s.io/client-go/testing"
-	v1alpha1 "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1"
-	appsv1alpha1 "k8s.io/sample-apiserver/pkg/generated/applyconfiguration/apps/v1alpha1"
+	v1alpha1 "github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1"
+	appsv1alpha1 "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/applyconfiguration/apps/v1alpha1"
 )
 
 // FakeApplications implements ApplicationInterface

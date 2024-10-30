@@ -26,10 +26,10 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
 	cache "k8s.io/client-go/tools/cache"
-	apisappsv1alpha1 "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1"
-	versioned "k8s.io/sample-apiserver/pkg/generated/clientset/versioned"
-	internalinterfaces "k8s.io/sample-apiserver/pkg/generated/informers/externalversions/internalinterfaces"
-	appsv1alpha1 "k8s.io/sample-apiserver/pkg/generated/listers/apps/v1alpha1"
+	apisappsv1alpha1 "github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1"
+	versioned "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/clientset/versioned"
+	internalinterfaces "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/informers/externalversions/internalinterfaces"
+	appsv1alpha1 "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/listers/apps/v1alpha1"
 )
 
 // ApplicationInformer provides access to a shared informer and lister for

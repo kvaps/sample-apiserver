@@ -18,7 +18,7 @@ package validation
 
 import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/sample-apiserver/pkg/apis/apps"
+	"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps"
 )
 
 // ValidateApplication validates a Application.

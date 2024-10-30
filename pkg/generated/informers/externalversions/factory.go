@@ -27,9 +27,9 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
-	versioned "k8s.io/sample-apiserver/pkg/generated/clientset/versioned"
-	internalinterfaces "k8s.io/sample-apiserver/pkg/generated/informers/externalversions/internalinterfaces"
-	apps "k8s.io/sample-apiserver/pkg/generated/informers/externalversions/apps"
+	versioned "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/clientset/versioned"
+	internalinterfaces "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/informers/externalversions/internalinterfaces"
+	apps "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/informers/externalversions/apps"
 )
 
 // SharedInformerOption defines the functional option type for SharedInformerFactory.

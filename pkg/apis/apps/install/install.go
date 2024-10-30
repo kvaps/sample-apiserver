@@ -19,7 +19,7 @@ package install
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	appsv1alpha1 "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1"
+	appsv1alpha1 "github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1"
 )
 
 // Install registers the API group and adds types to a scheme

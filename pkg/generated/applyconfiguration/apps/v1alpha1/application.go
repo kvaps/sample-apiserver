@@ -22,7 +22,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
-	appsv1alpha1 "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1"
+	appsv1alpha1 "github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1"
 )
 
 // ApplicationApplyConfiguration represents a declarative configuration of the Application type for use

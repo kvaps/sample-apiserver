@@ -12,9 +12,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apiserver/pkg/registry/rest"
 	"k8s.io/client-go/dynamic"
-	"k8s.io/sample-apiserver/pkg/apis/apps"
-	appsv1alpha1 "k8s.io/sample-apiserver/pkg/apis/apps/v1alpha1"
-	"k8s.io/sample-apiserver/pkg/conversion"
+	"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps"
+	appsv1alpha1 "github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1"
+	"github.com/aenix.io/cozystack/cozystack-api/pkg/conversion"
 )
 
 var helmReleaseGVR = schema.GroupVersionResource{

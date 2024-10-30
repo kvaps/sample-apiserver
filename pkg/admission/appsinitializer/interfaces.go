@@ -18,7 +18,7 @@ package appsinitializer
 
 import (
 	"k8s.io/apiserver/pkg/admission"
-	informers "k8s.io/sample-apiserver/pkg/generated/informers/externalversions"
+	informers "github.com/aenix.io/cozystack/cozystack-api/pkg/generated/informers/externalversions"
 )
 
 // WantsInternalAppsInformerFactory defines a function which sets InformerFactory for admission plugins that need it

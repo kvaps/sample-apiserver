@@ -13,10 +13,10 @@ import (
 	"k8s.io/client-go/dynamic"
 	restclient "k8s.io/client-go/rest"
 
-	"k8s.io/sample-apiserver/pkg/apis/apps"
-	"k8s.io/sample-apiserver/pkg/apis/apps/install"
-	appsregistry "k8s.io/sample-apiserver/pkg/registry"
-	applicationstorage "k8s.io/sample-apiserver/pkg/registry/apps/application"
+	"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps"
+	"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/install"
+	appsregistry "github.com/aenix.io/cozystack/cozystack-api/pkg/registry"
+	applicationstorage "github.com/aenix.io/cozystack/cozystack-api/pkg/registry/apps/application"
 )
 
 var (
