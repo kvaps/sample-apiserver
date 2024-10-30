@@ -336,7 +336,7 @@ func (r *REST) ConvertToTable(ctx context.Context, object runtime.Object, tableO
 
 	switch obj := object.(type) {
 	case *appsv1alpha1.ApplicationList:
-		// Define table columns
+		// Определение колонок таблицы
 		table.ColumnDefinitions = []metav1.TableColumnDefinition{
 			{Name: "NAME", Type: "string", Description: "Name of the Application", Priority: 0},
 			{Name: "READY", Type: "string", Description: "Ready status of the Application", Priority: 0},
@@ -368,7 +368,7 @@ func (r *REST) ConvertToTable(ctx context.Context, object runtime.Object, tableO
 		}
 
 	case *appsv1alpha1.Application:
-		// Define table columns
+		// Определение колонок таблицы
 		table.ColumnDefinitions = []metav1.TableColumnDefinition{
 			{Name: "NAME", Type: "string", Description: "Name of the Application", Priority: 0},
 			{Name: "READY", Type: "string", Description: "Ready status of the Application", Priority: 0},
@@ -397,8 +397,47 @@ func (r *REST) ConvertToTable(ctx context.Context, object runtime.Object, tableO
 			ResourceVersion: obj.GetResourceVersion(),
 		}
 
+	case *unstructured.Unstructured:
+		// Преобразование Unstructured объекта в Application
+		var app appsv1alpha1.Application
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.UnstructuredContent(), &app)
+		if err != nil {
+			log.Printf("Failed to convert Unstructured to Application: %v", err)
+			return nil, fmt.Errorf("failed to convert Unstructured to Application: %v", err)
+		}
+
+		// Определение колонок таблицы (можно переиспользовать существующие определения)
+		if len(table.ColumnDefinitions) == 0 {
+			table.ColumnDefinitions = []metav1.TableColumnDefinition{
+				{Name: "NAME", Type: "string", Description: "Name of the Application", Priority: 0},
+				{Name: "READY", Type: "string", Description: "Ready status of the Application", Priority: 0},
+				{Name: "AGE", Type: "string", Description: "Age of the Application", Priority: 0},
+				{Name: "VERSION", Type: "string", Description: "Version of the Application", Priority: 0},
+			}
+		}
+
+		now := time.Now()
+		name := app.GetName()
+		version := app.Status.Version
+		if version == "" {
+			version = "<unknown>"
+		}
+
+		readyStatus := getReadyStatus(app.Status.Conditions)
+		age := computeAge(app.GetCreationTimestamp().Time, now)
+
+		row := metav1.TableRow{
+			Cells:  []interface{}{name, readyStatus, age, version},
+			Object: runtime.RawExtension{Object: &app},
+		}
+		table.Rows = append(table.Rows, row)
+
+		table.ListMeta = metav1.ListMeta{
+			ResourceVersion: obj.GetResourceVersion(),
+		}
+
 	default:
-		// Return an error if object type is not supported
+		// Возврат ошибки, если тип объекта не поддерживается
 		resource := schema.GroupResource{}
 		if info, ok := request.RequestInfoFrom(ctx); ok {
 			resource = schema.GroupResource{Group: info.APIGroup, Resource: info.Resource}
@@ -409,12 +448,12 @@ func (r *REST) ConvertToTable(ctx context.Context, object runtime.Object, tableO
 		}
 	}
 
-	// Handle table options
+	// Обработка опций таблицы
 	if opt, ok := tableOptions.(*metav1.TableOptions); ok && opt != nil && opt.NoHeaders {
 		table.ColumnDefinitions = nil
 	}
 
-	// Set TypeMeta
+	// Установка TypeMeta
 	table.TypeMeta = metav1.TypeMeta{
 		APIVersion: "meta.k8s.io/v1",
 		Kind:       "Table",
