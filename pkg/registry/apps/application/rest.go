@@ -4,14 +4,17 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
+	"time"
 
 	helmv2 "github.com/fluxcd/helm-controller/api/v2"
+	metainternalversion "k8s.io/apimachinery/pkg/apis/meta/internalversion"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apiserver/pkg/endpoints/request" // Добавлен импорт для извлечения неймспейса
+	"k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/rest"
 	"k8s.io/client-go/dynamic"
 
@@ -138,34 +141,96 @@ func (r *REST) Get(ctx context.Context, name string, options *metav1.GetOptions)
 }
 
 // List retrieves a list of Application resources by translating them from HelmReleases.
-func (r *REST) List(ctx context.Context, options *metav1.ListOptions) (runtime.Object, error) {
+// It filters HelmReleases based on releaseConfig.Chart.Name and releaseConfig.Chart.SourceRef,
+// removes the releaseConfig.Prefix from their names, and returns them as unstructured objects.
+// List реализует метод интерфейса Lister.
+func (r *REST) List(ctx context.Context, options *metainternalversion.ListOptions) (runtime.Object, error) {
 	// Извлекаем неймспейс из контекста
 	namespace, ok := request.NamespaceFrom(ctx)
 	if !ok {
 		return nil, fmt.Errorf("namespace not found in context")
 	}
 
-	log.Printf("Attempting to list all resources of type %s in namespace %s", r.gvr.Resource, namespace)
+	log.Printf("Attempting to list all HelmReleases in namespace %s", namespace)
 
-	hrList, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace(namespace).List(ctx, *options)
+	// Преобразуем internalversion.ListOptions в metav1.ListOptions
+	metaOptions := metav1.ListOptions{
+		LabelSelector: options.LabelSelector.String(),
+		FieldSelector: options.FieldSelector.String(),
+		// Добавьте другие поля при необходимости
+	}
+
+	// Получаем список HelmReleases
+	hrList, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace(namespace).List(ctx, metaOptions)
 	if err != nil {
-		log.Printf("Error listing HelmReleases for resource type %s: %v", r.gvr.Resource, err)
+		log.Printf("Error listing HelmReleases: %v", err)
 		return nil, err
 	}
 
-	var appList appsv1alpha1.ApplicationList
-	appList.Items = make([]appsv1alpha1.Application, 0, len(hrList.Items))
+	// Создаем список для хранения отфильтрованных и преобразованных Application объектов
+	appList := &appsv1alpha1.ApplicationList{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "apps.cozystack.io/v1alpha1",
+			Kind:       "ApplicationList",
+		},
+		ListMeta: metav1.ListMeta{
+			ResourceVersion: hrList.GetResourceVersion(),
+		},
+		Items: []appsv1alpha1.Application{},
+	}
+
+	// Фильтруем и преобразуем HelmReleases в Applications
 	for _, hr := range hrList.Items {
-		app, err := r.ConvertHelmReleaseToApplication(&hr)
-		if err != nil {
-			log.Printf("Error converting HelmRelease to Application for resource %s: %v", hr.GetName(), err)
+		// Фильтрация по Chart Name
+		chartName, found, err := unstructured.NestedString(hr.Object, "spec", "chart", "spec", "chart")
+		if err != nil || !found {
+			log.Printf("HelmRelease %s missing spec.chart.spec.chart field: %v", hr.GetName(), err)
 			continue
 		}
+		if chartName != r.releaseConfig.Chart.Name {
+			log.Printf("HelmRelease %s chart name %s does not match expected %s", hr.GetName(), chartName, r.releaseConfig.Chart.Name)
+			continue
+		}
+
+		// Фильтрация по SourceRefConfig
+		sourceRefKind, found, err := unstructured.NestedString(hr.Object, "spec", "chart", "spec", "sourceRef", "kind")
+		if err != nil || !found {
+			log.Printf("HelmRelease %s missing spec.chart.spec.sourceRef.kind field: %v", hr.GetName(), err)
+			continue
+		}
+		sourceRefName, found, err := unstructured.NestedString(hr.Object, "spec", "chart", "spec", "sourceRef", "name")
+		if err != nil || !found {
+			log.Printf("HelmRelease %s missing spec.chart.spec.sourceRef.name field: %v", hr.GetName(), err)
+			continue
+		}
+		sourceRefNamespace, found, err := unstructured.NestedString(hr.Object, "spec", "chart", "spec", "sourceRef", "namespace")
+		if err != nil || !found {
+			log.Printf("HelmRelease %s missing spec.chart.spec.sourceRef.namespace field: %v", hr.GetName(), err)
+			continue
+		}
+		if sourceRefKind != r.releaseConfig.Chart.SourceRef.Kind ||
+			sourceRefName != r.releaseConfig.Chart.SourceRef.Name ||
+			sourceRefNamespace != r.releaseConfig.Chart.SourceRef.Namespace {
+			log.Printf("HelmRelease %s sourceRef does not match expected values", hr.GetName())
+			continue
+		}
+
+		// Преобразуем HelmRelease в Application
+		app, err := r.ConvertHelmReleaseToApplication(&hr)
+		if err != nil {
+			log.Printf("Error converting HelmRelease %s to Application: %v", hr.GetName(), err)
+			continue
+		}
+
+		// Удаляем префикс из имени
+		app.Name = strings.TrimPrefix(app.Name, r.releaseConfig.Prefix)
+
+		// Добавляем Application в список
 		appList.Items = append(appList.Items, app)
 	}
 
-	log.Printf("Successfully listed all resources of type %s in namespace %s", r.gvr.Resource, namespace)
-	return &appList, nil
+	log.Printf("Successfully listed %d Application resources in namespace %s", len(appList.Items), namespace)
+	return appList, nil
 }
 
 // Update updates an existing Application by translating it into a HelmRelease.
@@ -246,6 +311,11 @@ func (r *REST) New() runtime.Object {
 	return &appsv1alpha1.Application{}
 }
 
+// NewList возвращает пустой список Application объектов.
+func (r *REST) NewList() runtime.Object {
+	return &appsv1alpha1.ApplicationList{}
+}
+
 // Kind returns the resource kind used for API discovery.
 func (r *REST) Kind() string {
 	return r.gvk.Kind
@@ -254,6 +324,124 @@ func (r *REST) Kind() string {
 // GroupVersionKind returns the GroupVersionKind for REST.
 func (r *REST) GroupVersionKind(schema.GroupVersion) schema.GroupVersionKind {
 	return r.gvk
+}
+
+// ConvertToTable реализует интерфейс TableConvertor для вашей структуры REST.
+// Он создает metav1.Table с колонками NAME, VERSION, READY, AGE и заполняет их соответствующими данными.
+func (r *REST) ConvertToTable(ctx context.Context, object runtime.Object, tableOptions runtime.Object) (*metav1.Table, error) {
+	log.Printf("ConvertToTable: received object of type %T", object)
+
+	var table metav1.Table
+
+	switch obj := object.(type) {
+	case *appsv1alpha1.ApplicationList:
+		// Define table columns
+		table.ColumnDefinitions = []metav1.TableColumnDefinition{
+			{Name: "NAME", Type: "string", Description: "Name of the Application", Priority: 0},
+			{Name: "VERSION", Type: "string", Description: "Version of the Application", Priority: 0},
+			{Name: "READY", Type: "boolean", Description: "Ready status of the Application", Priority: 0},
+			{Name: "AGE", Type: "string", Description: "Age of the Application", Priority: 0},
+		}
+		table.Rows = make([]metav1.TableRow, 0, len(obj.Items))
+		now := time.Now()
+
+		for _, app := range obj.Items {
+			name := app.GetName()
+			version := app.Status.Version
+			if version == "" {
+				version = "<unknown>"
+			}
+
+			ready := false
+			for _, condition := range app.Status.Conditions {
+				if condition.Type == "Ready" && condition.Status == metav1.ConditionTrue {
+					ready = true
+					break
+				}
+			}
+
+			age := computeAge(app.GetCreationTimestamp().Time, now)
+
+			row := metav1.TableRow{
+				Cells:  []interface{}{name, version, ready, age},
+				Object: runtime.RawExtension{Object: &app},
+			}
+			table.Rows = append(table.Rows, row)
+		}
+
+		table.ListMeta = metav1.ListMeta{
+			ResourceVersion: obj.GetResourceVersion(),
+		}
+
+	case *appsv1alpha1.Application:
+		// Define table columns
+		table.ColumnDefinitions = []metav1.TableColumnDefinition{
+			{Name: "NAME", Type: "string", Description: "Name of the Application", Priority: 0},
+			{Name: "VERSION", Type: "string", Description: "Version of the Application", Priority: 0},
+			{Name: "READY", Type: "boolean", Description: "Ready status of the Application", Priority: 0},
+			{Name: "AGE", Type: "string", Description: "Age of the Application", Priority: 0},
+		}
+		table.Rows = []metav1.TableRow{}
+		now := time.Now()
+
+		name := obj.GetName()
+		version := obj.Status.Version
+		if version == "" {
+			version = "<unknown>"
+		}
+
+		ready := false
+		for _, condition := range obj.Status.Conditions {
+			if condition.Type == "Ready" && condition.Status == metav1.ConditionTrue {
+				ready = true
+				break
+			}
+		}
+
+		age := computeAge(obj.GetCreationTimestamp().Time, now)
+
+		row := metav1.TableRow{
+			Cells:  []interface{}{name, version, ready, age},
+			Object: runtime.RawExtension{Object: obj},
+		}
+		table.Rows = append(table.Rows, row)
+
+		table.ListMeta = metav1.ListMeta{
+			ResourceVersion: obj.GetResourceVersion(),
+		}
+
+	default:
+		// Return an error if object type is not supported
+		resource := schema.GroupResource{}
+		if info, ok := request.RequestInfoFrom(ctx); ok {
+			resource = schema.GroupResource{Group: info.APIGroup, Resource: info.Resource}
+		}
+		return nil, errNotAcceptable{
+			resource: resource,
+			message:  "object does not implement the Object interfaces",
+		}
+	}
+
+	// Handle table options
+	if opt, ok := tableOptions.(*metav1.TableOptions); ok && opt != nil && opt.NoHeaders {
+		table.ColumnDefinitions = nil
+	}
+
+	// Set TypeMeta
+	table.TypeMeta = metav1.TypeMeta{
+		APIVersion: "meta.k8s.io/v1",
+		Kind:       "Table",
+	}
+
+	log.Printf("ConvertToTable: returning table with %d rows", len(table.Rows))
+
+	return &table, nil
+}
+
+// computeAge вычисляет возраст объекта на основе CreationTimestamp и текущего времени.
+func computeAge(creationTime, currentTime time.Time) string {
+	duration := currentTime.Sub(creationTime)
+	return duration.Round(time.Minute).String()
 }
 
 // ConvertHelmReleaseToApplication converts a HelmRelease to an Application using the configuration.
@@ -351,4 +539,23 @@ func (r *REST) convertApplicationToHelmRelease(app *appsv1alpha1.Application) (*
 	}
 
 	return helmRelease, nil
+}
+
+// errNotAcceptable указывает, что ресурс не поддерживает конвертацию в Table
+type errNotAcceptable struct {
+	resource schema.GroupResource
+	message  string
+}
+
+func (e errNotAcceptable) Error() string {
+	return e.message
+}
+
+func (e errNotAcceptable) Status() metav1.Status {
+	return metav1.Status{
+		Status:  metav1.StatusFailure,
+		Code:    http.StatusNotAcceptable,
+		Reason:  metav1.StatusReason("NotAcceptable"),
+		Message: e.Error(),
+	}
 }
