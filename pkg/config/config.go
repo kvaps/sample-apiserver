@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v2"
@@ -45,7 +46,7 @@ type SourceRefConfig struct {
 	Namespace string `yaml:"namespace"`
 }
 
-// LoadConfig загружает конфигурацию из указанного пути
+// LoadConfig загружает конфигурацию из указанного пути и выполняет валидацию
 func LoadConfig(path string) (*ResourceConfig, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -55,6 +56,25 @@ func LoadConfig(path string) (*ResourceConfig, error) {
 	var config ResourceConfig
 	if err := yaml.Unmarshal(data, &config); err != nil {
 		return nil, err
+	}
+
+	// Валидация конфигурации
+	for i, res := range config.Resources {
+		if res.Application.Kind == "" {
+			return nil, fmt.Errorf("resource at index %d has empty kind", i)
+		}
+		if res.Application.Plural == "" {
+			return nil, fmt.Errorf("resource at index %d has empty plural", i)
+		}
+		if res.Release.Prefix == "" {
+			return nil, fmt.Errorf("resource at index %d has empty release prefix", i)
+		}
+		if res.Release.Chart.Name == "" {
+			return nil, fmt.Errorf("resource at index %d has empty chart name", i)
+		}
+		if res.Release.Chart.SourceRef.Kind == "" || res.Release.Chart.SourceRef.Name == "" || res.Release.Chart.SourceRef.Namespace == "" {
+			return nil, fmt.Errorf("resource at index %d has incomplete chart sourceRef", i)
+		}
 	}
 
 	return &config, nil
