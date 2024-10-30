@@ -17,6 +17,9 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
+
+	"github.com/aenix.io/cozystack/cozystack-api/pkg/config"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -48,23 +51,6 @@ func init() {
 
 // Adds the list of known types to the given scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Kubernetes"), &Application{})
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("KubernetesList"), &ApplicationList{})
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Postgres"), &Application{})
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("PostgresList"), &ApplicationList{})
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Redis"), &Application{})
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("RedisList"), &ApplicationList{})
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("Kafka"), &Application{})
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("KafkaList"), &ApplicationList{})
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("RabbitMQ"), &Application{})
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("RabbitMQList"), &ApplicationList{})
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("FerretDB"), &Application{})
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("FerretDBList"), &ApplicationList{})
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("VMDisk"), &Application{})
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("VMDiskList"), &ApplicationList{})
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("VMInstance"), &Application{})
-	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("VMInstanceList"), &ApplicationList{})
-
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil
 }
@@ -72,4 +58,20 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 // Resource takes an unqualified resource and returns a Group qualified GroupResource
 func Resource(resource string) schema.GroupResource {
 	return SchemeGroupVersion.WithResource(resource).GroupResource()
+}
+
+// RegisterDynamicTypes регистрирует типы динамически на основе конфигурации
+func RegisterDynamicTypes(scheme *runtime.Scheme, cfg *config.ResourceConfig) error {
+	for _, res := range cfg.Resources {
+		kind := res.Application.Kind
+
+		// Регистрация вида (Kind)
+		gvk := SchemeGroupVersion.WithKind(kind)
+		scheme.AddKnownTypeWithName(gvk, &Application{})
+		scheme.AddKnownTypeWithName(gvk.GroupVersion().WithKind(kind+"List"), &ApplicationList{})
+
+		fmt.Printf("Registered kind: %s\n", kind)
+	}
+
+	return nil
 }

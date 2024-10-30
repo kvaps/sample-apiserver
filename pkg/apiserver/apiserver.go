@@ -15,6 +15,8 @@ import (
 
 	"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps"
 	"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/install"
+	appsv1alpha1 "github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1"
+	"github.com/aenix.io/cozystack/cozystack-api/pkg/config"
 	appsregistry "github.com/aenix.io/cozystack/cozystack-api/pkg/registry"
 	applicationstorage "github.com/aenix.io/cozystack/cozystack-api/pkg/registry/apps/application"
 )
@@ -51,15 +53,10 @@ func init() {
 	)
 }
 
-// ExtraConfig holds custom apiserver config
-type ExtraConfig struct {
-	// Place you custom config here.
-}
-
 // Config defines the config for the apiserver
 type Config struct {
-	GenericConfig *genericapiserver.RecommendedConfig
-	ExtraConfig   ExtraConfig
+	GenericConfig  *genericapiserver.RecommendedConfig
+	ResourceConfig *config.ResourceConfig
 }
 
 // AppsServer содержит состояние для Kubernetes master/api server.
@@ -68,8 +65,8 @@ type AppsServer struct {
 }
 
 type completedConfig struct {
-	GenericConfig genericapiserver.CompletedConfig
-	ExtraConfig   *ExtraConfig
+	GenericConfig  genericapiserver.CompletedConfig
+	ResourceConfig *config.ResourceConfig
 }
 
 // CompletedConfig внедряет приватный указатель, который нельзя создать за пределами этого пакета.
@@ -81,7 +78,7 @@ type CompletedConfig struct {
 func (cfg *Config) Complete() CompletedConfig {
 	c := completedConfig{
 		cfg.GenericConfig.Complete(),
-		&cfg.ExtraConfig,
+		cfg.ResourceConfig,
 	}
 
 	return CompletedConfig{&c}
@@ -100,6 +97,12 @@ func (c completedConfig) New() (*AppsServer, error) {
 
 	apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(apps.GroupName, Scheme, metav1.ParameterCodec, Codecs)
 
+	// Динамическая регистрация типов на основе конфигурации
+	err = appsv1alpha1.RegisterDynamicTypes(Scheme, c.ResourceConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to register dynamic types: %v", err)
+	}
+
 	// Создание динамического клиента для HelmRelease с использованием InClusterConfig
 	inClusterConfig, err := restclient.InClusterConfig()
 	if err != nil {
@@ -112,22 +115,20 @@ func (c completedConfig) New() (*AppsServer, error) {
 	}
 
 	v1alpha1storage := map[string]rest.Storage{}
-	v1alpha1storage["kuberneteses"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "kuberneteses"}, "Kubernetes"))
-	v1alpha1storage["postgreses"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "postgreses"}, "Postgres"))
-	v1alpha1storage["redises"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "redises"}, "Redis"))
-	v1alpha1storage["kafkas"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "kafkas"}, "Kafka"))
-	v1alpha1storage["rabbitmqs"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "rabbitmqs"}, "RabbitMQ"))
-	v1alpha1storage["ferretdbs"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "ferretdbs"}, "FerretDB"))
-	v1alpha1storage["vmdisks"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "vmdisks"}, "VMDisk"))
-	v1alpha1storage["vminstances"] = appsregistry.RESTInPeace(
-		applicationstorage.NewREST(dynamicClient, schema.GroupVersionResource{Group: "apps", Version: "v1alpha1", Resource: "vminstances"}, "VMInstance"))
+
+	for _, res := range c.ResourceConfig.Resources {
+		kind := res.Application.Kind
+		plural := res.Application.Plural
+
+		gvr := schema.GroupVersionResource{
+			Group:    apps.GroupName,
+			Version:  "v1alpha1",
+			Resource: plural,
+		}
+
+		storage := applicationstorage.NewREST(dynamicClient, gvr, kind)
+		v1alpha1storage[plural] = appsregistry.RESTInPeace(storage)
+	}
 
 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
 
