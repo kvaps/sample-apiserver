@@ -54,7 +54,7 @@ data:
     - application:
         kind: Postgres
         singular: postgres
-        plural: postgres
+        plural: postgreses
         shortNames: ["postgres", "postgreses"]
       release:
         prefix: postgres-

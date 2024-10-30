@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/duration"
 	"k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/rest"
 	"k8s.io/client-go/dynamic"
@@ -338,9 +339,9 @@ func (r *REST) ConvertToTable(ctx context.Context, object runtime.Object, tableO
 		// Define table columns
 		table.ColumnDefinitions = []metav1.TableColumnDefinition{
 			{Name: "NAME", Type: "string", Description: "Name of the Application", Priority: 0},
-			{Name: "VERSION", Type: "string", Description: "Version of the Application", Priority: 0},
-			{Name: "READY", Type: "boolean", Description: "Ready status of the Application", Priority: 0},
+			{Name: "READY", Type: "string", Description: "Ready status of the Application", Priority: 0},
 			{Name: "AGE", Type: "string", Description: "Age of the Application", Priority: 0},
+			{Name: "VERSION", Type: "string", Description: "Version of the Application", Priority: 0},
 		}
 		table.Rows = make([]metav1.TableRow, 0, len(obj.Items))
 		now := time.Now()
@@ -352,18 +353,11 @@ func (r *REST) ConvertToTable(ctx context.Context, object runtime.Object, tableO
 				version = "<unknown>"
 			}
 
-			ready := false
-			for _, condition := range app.Status.Conditions {
-				if condition.Type == "Ready" && condition.Status == metav1.ConditionTrue {
-					ready = true
-					break
-				}
-			}
-
+			readyStatus := getReadyStatus(app.Status.Conditions)
 			age := computeAge(app.GetCreationTimestamp().Time, now)
 
 			row := metav1.TableRow{
-				Cells:  []interface{}{name, version, ready, age},
+				Cells:  []interface{}{name, readyStatus, age, version},
 				Object: runtime.RawExtension{Object: &app},
 			}
 			table.Rows = append(table.Rows, row)
@@ -377,9 +371,9 @@ func (r *REST) ConvertToTable(ctx context.Context, object runtime.Object, tableO
 		// Define table columns
 		table.ColumnDefinitions = []metav1.TableColumnDefinition{
 			{Name: "NAME", Type: "string", Description: "Name of the Application", Priority: 0},
-			{Name: "VERSION", Type: "string", Description: "Version of the Application", Priority: 0},
-			{Name: "READY", Type: "boolean", Description: "Ready status of the Application", Priority: 0},
+			{Name: "READY", Type: "string", Description: "Ready status of the Application", Priority: 0},
 			{Name: "AGE", Type: "string", Description: "Age of the Application", Priority: 0},
+			{Name: "VERSION", Type: "string", Description: "Version of the Application", Priority: 0},
 		}
 		table.Rows = []metav1.TableRow{}
 		now := time.Now()
@@ -390,18 +384,11 @@ func (r *REST) ConvertToTable(ctx context.Context, object runtime.Object, tableO
 			version = "<unknown>"
 		}
 
-		ready := false
-		for _, condition := range obj.Status.Conditions {
-			if condition.Type == "Ready" && condition.Status == metav1.ConditionTrue {
-				ready = true
-				break
-			}
-		}
-
+		readyStatus := getReadyStatus(obj.Status.Conditions)
 		age := computeAge(obj.GetCreationTimestamp().Time, now)
 
 		row := metav1.TableRow{
-			Cells:  []interface{}{name, version, ready, age},
+			Cells:  []interface{}{name, readyStatus, age, version},
 			Object: runtime.RawExtension{Object: obj},
 		}
 		table.Rows = append(table.Rows, row)
@@ -440,8 +427,24 @@ func (r *REST) ConvertToTable(ctx context.Context, object runtime.Object, tableO
 
 // computeAge вычисляет возраст объекта на основе CreationTimestamp и текущего времени.
 func computeAge(creationTime, currentTime time.Time) string {
-	duration := currentTime.Sub(creationTime)
-	return duration.Round(time.Minute).String()
+	ageDuration := currentTime.Sub(creationTime)
+	return duration.HumanDuration(ageDuration)
+}
+
+func getReadyStatus(conditions []metav1.Condition) string {
+	for _, condition := range conditions {
+		if condition.Type == "Ready" {
+			switch condition.Status {
+			case metav1.ConditionTrue:
+				return "True"
+			case metav1.ConditionFalse:
+				return "False"
+			default:
+				return "Unknown"
+			}
+		}
+	}
+	return "Unknown"
 }
 
 // ConvertHelmReleaseToApplication converts a HelmRelease to an Application using the configuration.
