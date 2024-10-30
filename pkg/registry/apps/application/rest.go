@@ -106,7 +106,7 @@ func (r *REST) Get(ctx context.Context, name string, options *metav1.GetOptions)
 	log.Printf("Attempting to retrieve resource %s of type %s in namespace %s", name, r.gvr.Resource, "tenant-kvaps")
 
 	// Retrieve HelmRelease as unstructured.
-	hr, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace("tenant-kvaps").Get(ctx, name, *options)
+	hr, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace("tenant-kvaps").Get(ctx, r.releaseConfig.Prefix+name, *options)
 	if err != nil {
 		log.Printf("Error retrieving HelmRelease for resource %s: %v", name, err)
 		return nil, err
