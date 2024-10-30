@@ -91,7 +91,7 @@ func (r *REST) Create(ctx context.Context, obj runtime.Object, createValidation 
 	log.Printf("Successfully created and converted HelmRelease %s to Application", createdHR.GetName())
 
 	// Convert Application to unstructured.Unstructured.
-	unstructuredApp, err := runtime.DefaultUnstructuredConverter.ToUnstructured(convertedApp)
+	unstructuredApp, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&convertedApp)
 	if err != nil {
 		log.Printf("Failed to convert Application to unstructured for resource %s: %v", convertedApp.GetName(), err)
 		return nil, fmt.Errorf("failed to convert Application to unstructured: %v", err)
