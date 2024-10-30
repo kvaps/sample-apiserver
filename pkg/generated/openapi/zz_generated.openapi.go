@@ -30,6 +30,9 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
+		"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.Application":             schema_pkg_apis_apps_v1alpha1_Application(ref),
+		"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.ApplicationList":         schema_pkg_apis_apps_v1alpha1_ApplicationList(ref),
+		"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.ApplicationStatus":       schema_pkg_apis_apps_v1alpha1_ApplicationStatus(ref),
 		"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.ConversionRequest":                 schema_pkg_apis_apiextensions_v1_ConversionRequest(ref),
 		"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.ConversionResponse":                schema_pkg_apis_apiextensions_v1_ConversionResponse(ref),
 		"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.ConversionReview":                  schema_pkg_apis_apiextensions_v1_ConversionReview(ref),
@@ -110,9 +113,142 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"k8s.io/apimachinery/pkg/runtime.TypeMeta":                                                   schema_k8sio_apimachinery_pkg_runtime_TypeMeta(ref),
 		"k8s.io/apimachinery/pkg/runtime.Unknown":                                                    schema_k8sio_apimachinery_pkg_runtime_Unknown(ref),
 		"k8s.io/apimachinery/pkg/version.Info":                                                       schema_k8sio_apimachinery_pkg_version_Info(ref),
-		"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.Application":                                 schema_pkg_apis_apps_v1alpha1_Application(ref),
-		"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.ApplicationList":                             schema_pkg_apis_apps_v1alpha1_ApplicationList(ref),
-		"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.ApplicationStatus":                           schema_pkg_apis_apps_v1alpha1_ApplicationStatus(ref),
+	}
+}
+
+func schema_pkg_apis_apps_v1alpha1_Application(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "Application is an example type with a spec and a status.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"appVersion": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref("github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.ApplicationStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.ApplicationStatus", "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+	}
+}
+
+func schema_pkg_apis_apps_v1alpha1_ApplicationList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "ApplicationList is a list of Application objects.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
+						},
+					},
+					"items": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref("github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.Application"),
+									},
+								},
+							},
+						},
+					},
+				},
+				Required: []string{"items"},
+			},
+		},
+		Dependencies: []string{
+			"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.Application", "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
+	}
+}
+
+func schema_pkg_apis_apps_v1alpha1_ApplicationStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "ApplicationStatus is the status of a Application.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"version": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Conditions holds the conditions for the Application.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"conditions": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.Condition"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.Condition"},
 	}
 }
 
@@ -4180,141 +4316,5 @@ func schema_k8sio_apimachinery_pkg_version_Info(ref common.ReferenceCallback) co
 				Required: []string{"major", "minor", "gitVersion", "gitCommit", "gitTreeState", "buildDate", "goVersion", "compiler", "platform"},
 			},
 		},
-	}
-}
-
-func schema_pkg_apis_apps_v1alpha1_Application(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "Application is an example type with a spec and a status.",
-				Type:        []string{"object"},
-				Properties: map[string]spec.Schema{
-					"kind": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"apiVersion": {
-						SchemaProps: spec.SchemaProps{
-							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"metadata": {
-						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
-						},
-					},
-					"appVersion": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-					"spec": {
-						SchemaProps: spec.SchemaProps{
-							Ref: ref("k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON"),
-						},
-					},
-					"status": {
-						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.ApplicationStatus"),
-						},
-					},
-				},
-			},
-		},
-		Dependencies: []string{
-			"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.ApplicationStatus"},
-	}
-}
-
-func schema_pkg_apis_apps_v1alpha1_ApplicationList(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "ApplicationList is a list of Application objects.",
-				Type:        []string{"object"},
-				Properties: map[string]spec.Schema{
-					"kind": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"apiVersion": {
-						SchemaProps: spec.SchemaProps{
-							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"metadata": {
-						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
-						},
-					},
-					"items": {
-						SchemaProps: spec.SchemaProps{
-							Type: []string{"array"},
-							Items: &spec.SchemaOrArray{
-								Schema: &spec.Schema{
-									SchemaProps: spec.SchemaProps{
-										Default: map[string]interface{}{},
-										Ref:     ref("github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.Application"),
-									},
-								},
-							},
-						},
-					},
-				},
-				Required: []string{"items"},
-			},
-		},
-		Dependencies: []string{
-			"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1.Application"},
-	}
-}
-
-func schema_pkg_apis_apps_v1alpha1_ApplicationStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "ApplicationStatus is the status of a Application.",
-				Type:        []string{"object"},
-				Properties: map[string]spec.Schema{
-					"version": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Conditions holds the conditions for the Application.",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"conditions": {
-						SchemaProps: spec.SchemaProps{
-							Type: []string{"array"},
-							Items: &spec.SchemaOrArray{
-								Schema: &spec.Schema{
-									SchemaProps: spec.SchemaProps{
-										Default: map[string]interface{}{},
-										Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.Condition"),
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		Dependencies: []string{
-			"k8s.io/apimachinery/pkg/apis/meta/v1.Condition"},
 	}
 }
