@@ -7,18 +7,18 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// ResourceConfig представляет структуру конфигурационного файла
+// ResourceConfig represents the structure of the configuration file.
 type ResourceConfig struct {
 	Resources []Resource `yaml:"resources"`
 }
 
-// Resource описывает отдельный ресурс
+// Resource describes an individual resource.
 type Resource struct {
 	Application ApplicationConfig `yaml:"application"`
 	Release     ReleaseConfig     `yaml:"release"`
 }
 
-// ApplicationConfig содержит настройки приложения
+// ApplicationConfig contains the application settings.
 type ApplicationConfig struct {
 	Kind       string   `yaml:"kind"`
 	Singular   string   `yaml:"singular"`
@@ -26,27 +26,27 @@ type ApplicationConfig struct {
 	ShortNames []string `yaml:"shortNames"`
 }
 
-// ReleaseConfig содержит настройки релиза
+// ReleaseConfig contains the release settings.
 type ReleaseConfig struct {
 	Prefix string            `yaml:"prefix"`
 	Labels map[string]string `yaml:"labels"`
 	Chart  ChartConfig       `yaml:"chart"`
 }
 
-// ChartConfig содержит настройки чарта
+// ChartConfig contains the chart settings.
 type ChartConfig struct {
 	Name      string          `yaml:"name"`
 	SourceRef SourceRefConfig `yaml:"sourceRef"`
 }
 
-// SourceRefConfig содержит ссылку на источник чарта
+// SourceRefConfig contains the reference to the chart source.
 type SourceRefConfig struct {
 	Kind      string `yaml:"kind"`
 	Name      string `yaml:"name"`
 	Namespace string `yaml:"namespace"`
 }
 
-// LoadConfig загружает конфигурацию из указанного пути и выполняет валидацию
+// LoadConfig loads the configuration from the specified path and validates it.
 func LoadConfig(path string) (*ResourceConfig, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -58,24 +58,23 @@ func LoadConfig(path string) (*ResourceConfig, error) {
 		return nil, err
 	}
 
-	// Валидация конфигурации
+	// Validate the configuration.
 	for i, res := range config.Resources {
 		if res.Application.Kind == "" {
-			return nil, fmt.Errorf("resource at index %d has empty kind", i)
+			return nil, fmt.Errorf("resource at index %d has an empty kind", i)
 		}
 		if res.Application.Plural == "" {
-			return nil, fmt.Errorf("resource at index %d has empty plural", i)
+			return nil, fmt.Errorf("resource at index %d has an empty plural", i)
 		}
 		if res.Release.Prefix == "" {
-			return nil, fmt.Errorf("resource at index %d has empty release prefix", i)
+			return nil, fmt.Errorf("resource at index %d has an empty release prefix", i)
 		}
 		if res.Release.Chart.Name == "" {
-			return nil, fmt.Errorf("resource at index %d has empty chart name", i)
+			return nil, fmt.Errorf("resource at index %d has an empty chart name in release", i)
 		}
 		if res.Release.Chart.SourceRef.Kind == "" || res.Release.Chart.SourceRef.Name == "" || res.Release.Chart.SourceRef.Namespace == "" {
-			return nil, fmt.Errorf("resource at index %d has incomplete chart sourceRef", i)
+			return nil, fmt.Errorf("resource at index %d has an incomplete sourceRef for chart in release", i)
 		}
 	}
-
 	return &config, nil
 }

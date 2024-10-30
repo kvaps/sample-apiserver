@@ -33,16 +33,15 @@ var (
 func init() {
 	install.Install(Scheme)
 
-	// Регистрация типов HelmRelease
+	// Register HelmRelease types.
 	if err := helmv2.AddToScheme(Scheme); err != nil {
 		panic(fmt.Sprintf("Failed to add HelmRelease types to scheme: %v", err))
 	}
 
-	// we need to add the options to empty v1
-	// TODO fix the server code to avoid this
+	// Add unversioned types.
 	metav1.AddToGroupVersion(Scheme, schema.GroupVersion{Version: "v1"})
 
-	// TODO: keep the generic API server from wanting this
+	// Add unversioned types.
 	unversioned := schema.GroupVersion{Group: "", Version: "v1"}
 	Scheme.AddUnversionedTypes(unversioned,
 		&metav1.Status{},
@@ -53,13 +52,13 @@ func init() {
 	)
 }
 
-// Config defines the config for the apiserver
+// Config defines the configuration for the apiserver.
 type Config struct {
 	GenericConfig  *genericapiserver.RecommendedConfig
 	ResourceConfig *config.ResourceConfig
 }
 
-// AppsServer содержит состояние для Kubernetes master/api server.
+// AppsServer holds the state for the Kubernetes master/api server.
 type AppsServer struct {
 	GenericAPIServer *genericapiserver.GenericAPIServer
 }
@@ -69,12 +68,12 @@ type completedConfig struct {
 	ResourceConfig *config.ResourceConfig
 }
 
-// CompletedConfig внедряет приватный указатель, который нельзя создать за пределами этого пакета.
+// CompletedConfig embeds a private pointer that cannot be created outside of this package.
 type CompletedConfig struct {
 	*completedConfig
 }
 
-// Complete заполняет любые поля, которые не установлены, но необходимы для корректной работы.
+// Complete fills in any fields that are not set but are required for valid operation.
 func (cfg *Config) Complete() CompletedConfig {
 	c := completedConfig{
 		cfg.GenericConfig.Complete(),
@@ -84,9 +83,9 @@ func (cfg *Config) Complete() CompletedConfig {
 	return CompletedConfig{&c}
 }
 
-// New возвращает новый экземпляр AppsServer из данной конфигурации.
+// New returns a new instance of AppsServer from the given configuration.
 func (c completedConfig) New() (*AppsServer, error) {
-	genericServer, err := c.GenericConfig.New("sample-apiserver", genericapiserver.NewEmptyDelegate())
+	genericServer, err := c.GenericConfig.New("apps-apiserver", genericapiserver.NewEmptyDelegate())
 	if err != nil {
 		return nil, err
 	}
@@ -97,13 +96,13 @@ func (c completedConfig) New() (*AppsServer, error) {
 
 	apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(apps.GroupName, Scheme, metav1.ParameterCodec, Codecs)
 
-	// Динамическая регистрация типов на основе конфигурации
+	// Dynamically register types based on the configuration.
 	err = appsv1alpha1.RegisterDynamicTypes(Scheme, c.ResourceConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to register dynamic types: %v", err)
 	}
 
-	// Создание динамического клиента для HelmRelease с использованием InClusterConfig
+	// Create a dynamic client for HelmRelease using InClusterConfig.
 	inClusterConfig, err := restclient.InClusterConfig()
 	if err != nil {
 		return nil, fmt.Errorf("unable to get in-cluster config: %v", err)
@@ -116,18 +115,9 @@ func (c completedConfig) New() (*AppsServer, error) {
 
 	v1alpha1storage := map[string]rest.Storage{}
 
-	for _, res := range c.ResourceConfig.Resources {
-		kind := res.Application.Kind
-		plural := res.Application.Plural
-
-		gvr := schema.GroupVersionResource{
-			Group:    apps.GroupName,
-			Version:  "v1alpha1",
-			Resource: plural,
-		}
-
-		storage := applicationstorage.NewREST(dynamicClient, gvr, kind)
-		v1alpha1storage[plural] = appsregistry.RESTInPeace(storage)
+	for _, resConfig := range c.ResourceConfig.Resources {
+		storage := applicationstorage.NewREST(dynamicClient, &resConfig)
+		v1alpha1storage[resConfig.Application.Plural] = appsregistry.RESTInPeace(storage)
 	}
 
 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
