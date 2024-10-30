@@ -4,8 +4,6 @@ module k8s.io/sample-apiserver
 
 go 1.23.0
 
-godebug default=go1.23
-
 require (
 	github.com/emicklei/go-restful/v3 v3.11.0
 	github.com/google/gofuzz v1.2.0
