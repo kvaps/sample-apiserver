@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apiserver/pkg/endpoints/request" // Добавлен импорт для извлечения неймспейса
 	"k8s.io/apiserver/pkg/registry/rest"
 	"k8s.io/client-go/dynamic"
 
@@ -103,10 +104,16 @@ func (r *REST) Create(ctx context.Context, obj runtime.Object, createValidation 
 
 // Get retrieves an Application by translating it from a HelmRelease and returns it as an unstructured object.
 func (r *REST) Get(ctx context.Context, name string, options *metav1.GetOptions) (runtime.Object, error) {
-	log.Printf("Attempting to retrieve resource %s of type %s in namespace %s", name, r.gvr.Resource, "tenant-kvaps")
+	// Извлекаем неймспейс из контекста
+	namespace, ok := request.NamespaceFrom(ctx)
+	if !ok {
+		return nil, fmt.Errorf("namespace not found in context")
+	}
+
+	log.Printf("Attempting to retrieve resource %s of type %s in namespace %s", name, r.gvr.Resource, namespace)
 
 	// Retrieve HelmRelease as unstructured.
-	hr, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace("tenant-kvaps").Get(ctx, r.releaseConfig.Prefix+name, *options)
+	hr, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace(namespace).Get(ctx, r.releaseConfig.Prefix+name, *options)
 	if err != nil {
 		log.Printf("Error retrieving HelmRelease for resource %s: %v", name, err)
 		return nil, err
@@ -132,9 +139,15 @@ func (r *REST) Get(ctx context.Context, name string, options *metav1.GetOptions)
 
 // List retrieves a list of Application resources by translating them from HelmReleases.
 func (r *REST) List(ctx context.Context, options *metav1.ListOptions) (runtime.Object, error) {
-	log.Printf("Attempting to list all resources of type %s in namespace %s", r.gvr.Resource, "tenant-kvaps")
+	// Извлекаем неймспейс из контекста
+	namespace, ok := request.NamespaceFrom(ctx)
+	if !ok {
+		return nil, fmt.Errorf("namespace not found in context")
+	}
 
-	hrList, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace("tenant-kvaps").List(ctx, *options)
+	log.Printf("Attempting to list all resources of type %s in namespace %s", r.gvr.Resource, namespace)
+
+	hrList, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace(namespace).List(ctx, *options)
 	if err != nil {
 		log.Printf("Error listing HelmReleases for resource type %s: %v", r.gvr.Resource, err)
 		return nil, err
@@ -151,7 +164,7 @@ func (r *REST) List(ctx context.Context, options *metav1.ListOptions) (runtime.O
 		appList.Items = append(appList.Items, app)
 	}
 
-	log.Printf("Successfully listed all resources of type %s in namespace %s", r.gvr.Resource, "tenant-kvaps")
+	log.Printf("Successfully listed all resources of type %s in namespace %s", r.gvr.Resource, namespace)
 	return &appList, nil
 }
 
@@ -205,9 +218,15 @@ func (r *REST) Update(ctx context.Context, obj runtime.Object, createValidation 
 
 // Delete deletes an Application by translating its deletion into a HelmRelease deletion.
 func (r *REST) Delete(ctx context.Context, name string, options *metav1.DeleteOptions) error {
-	log.Printf("Deleting HelmRelease %s in namespace %s", name, "tenant-kvaps")
+	// Извлекаем неймспейс из контекста
+	namespace, ok := request.NamespaceFrom(ctx)
+	if !ok {
+		return fmt.Errorf("namespace not found in context")
+	}
 
-	err := r.dynamicClient.Resource(helmReleaseGVR).Namespace("tenant-kvaps").Delete(ctx, name, *options)
+	log.Printf("Deleting HelmRelease %s in namespace %s", name, namespace)
+
+	err := r.dynamicClient.Resource(helmReleaseGVR).Namespace(namespace).Delete(ctx, r.releaseConfig.Prefix+name, *options)
 	if err != nil {
 		log.Printf("Failed to delete HelmRelease %s: %v", name, err)
 		return err

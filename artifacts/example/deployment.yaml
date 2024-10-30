@@ -18,7 +18,7 @@ spec:
       serviceAccountName: cozystack-api
       containers:
       - name: cozystack-api
-        image: ghcr.io/kvaps/test:apiserver1@sha256:f9886d60d3186a9b59433696d11d42038fb40ecfd4479e8a69d7a7bfc6fb65a8
+        image: ghcr.io/kvaps/test:apiserver1@sha256:c4aa83a28f07257eadb3d0893e0683ed962f94a0fe892bcca9fc90b97c84d45e
         args: ["--config=/config/config.yaml"]
         volumeMounts:
         - name: config-volume
