@@ -60,12 +60,11 @@ func Resource(resource string) schema.GroupResource {
 	return SchemeGroupVersion.WithResource(resource).GroupResource()
 }
 
-// RegisterDynamicTypes регистрирует типы динамически на основе конфигурации
+// RegisterDynamicTypes registers types dynamically based on config
 func RegisterDynamicTypes(scheme *runtime.Scheme, cfg *config.ResourceConfig) error {
 	for _, res := range cfg.Resources {
 		kind := res.Application.Kind
 
-		// Регистрация вида (Kind)
 		gvk := SchemeGroupVersion.WithKind(kind)
 		scheme.AddKnownTypeWithName(gvk, &Application{})
 		scheme.AddKnownTypeWithName(gvk.GroupVersion().WithKind(kind+"List"), &ApplicationList{})

@@ -40,7 +40,7 @@ import (
 	netutils "k8s.io/utils/net"
 )
 
-// AppsServerOptions содержит состояние для master/api server
+// AppsServerOptions holds the state for the Apps API server
 type AppsServerOptions struct {
 	RecommendedOptions *genericoptions.RecommendedOptions
 
@@ -49,14 +49,14 @@ type AppsServerOptions struct {
 
 	AlternateDNS []string
 
-	// Добавляем поле для хранения пути к конфигурации
+	// Add a field to store the configuration path
 	ResourceConfigPath string
 
-	// Добавляем поле для хранения конфигурации
+	// Add a field to store the configuration
 	ResourceConfig *config.ResourceConfig
 }
 
-// NewAppsServerOptions возвращает новый экземпляр AppsServerOptions
+// NewAppsServerOptions returns a new instance of AppsServerOptions
 func NewAppsServerOptions(out, errOut io.Writer) *AppsServerOptions {
 	o := &AppsServerOptions{
 		RecommendedOptions: genericoptions.NewRecommendedOptions(
@@ -71,7 +71,7 @@ func NewAppsServerOptions(out, errOut io.Writer) *AppsServerOptions {
 	return o
 }
 
-// NewCommandStartAppsServer предоставляет обработчик CLI для команды 'start apps-server'
+// NewCommandStartAppsServer provides a CLI handler for the 'start apps-server' command
 func NewCommandStartAppsServer(ctx context.Context, defaults *AppsServerOptions) *cobra.Command {
 	o := *defaults
 	cmd := &cobra.Command{
@@ -98,48 +98,48 @@ func NewCommandStartAppsServer(ctx context.Context, defaults *AppsServerOptions)
 	flags := cmd.Flags()
 	o.RecommendedOptions.AddFlags(flags)
 
-	// Добавляем флаг для пути к конфигу
+	// Add a flag for the config path
 	flags.StringVar(&o.ResourceConfigPath, "config", "config.yaml", "Path to the resource configuration file")
 
-	// Следующие строки демонстрируют, как настроить совместимость версий и feature gates
-	// для компонента "Apps" в соответствии с KEP-4330.
+	// The following lines demonstrate how to configure version compatibility and feature gates
+	// for the "Apps" component according to KEP-4330.
 
-	// Создаём объект версии по умолчанию для компонента "Apps".
+	// Create a default version object for the "Apps" component.
 	defaultAppsVersion := "1.1"
-	// Регистрируем компонент "Apps" в глобальном реестре компонентов,
-	// связывая его с эффективной версией и конфигурацией feature gates.
+	// Register the "Apps" component in the global component registry,
+	// associating it with its effective version and feature gate configuration.
 	_, appsFeatureGate := utilversionpkg.DefaultComponentGlobalsRegistry.ComponentGlobalsOrRegister(
 		apiserver.AppsComponentName, utilversionpkg.NewEffectiveVersion(defaultAppsVersion),
 		featuregate.NewVersionedFeatureGate(version.MustParse(defaultAppsVersion)),
 	)
 
-	// Добавляем спецификации feature gates для компонента "Apps".
+	// Add feature gate specifications for the "Apps" component.
 	utilruntime.Must(appsFeatureGate.AddVersioned(map[featuregate.Feature]featuregate.VersionedSpecs{
-		// Пример добавления feature gates:
+		// Example of adding feature gates:
 		// "FeatureName": {{"v1", true}, {"v2", false}},
 	}))
 
-	// Регистрируем стандартный kube компонент, если он ещё не зарегистрирован в глобальном реестре.
+	// Register the standard kube component if it is not already registered in the global registry.
 	_, _ = utilversionpkg.DefaultComponentGlobalsRegistry.ComponentGlobalsOrRegister(
 		utilversionpkg.DefaultKubeComponent,
 		utilversionpkg.NewEffectiveVersion(baseversion.DefaultKubeBinaryVersion),
 		utilfeature.DefaultMutableFeatureGate,
 	)
 
-	// Устанавливаем сопоставление эмуляции версии от компонента "Apps" к kube компоненту.
+	// Set the version emulation mapping from the "Apps" component to the kube component.
 	utilruntime.Must(utilversionpkg.DefaultComponentGlobalsRegistry.SetEmulationVersionMapping(
 		apiserver.AppsComponentName, utilversionpkg.DefaultKubeComponent, AppsVersionToKubeVersion,
 	))
 
-	// Добавляем флаги из глобального реестра компонентов.
+	// Add flags from the global component registry.
 	utilversionpkg.DefaultComponentGlobalsRegistry.AddFlags(flags)
 
 	return cmd
 }
 
-// Complete заполняет поля, которые не установлены
+// Complete fills in the fields that are not set
 func (o *AppsServerOptions) Complete() error {
-	// Загружаем конфигурационный файл
+	// Load the configuration file
 	cfg, err := config.LoadConfig(o.ResourceConfigPath)
 	if err != nil {
 		return fmt.Errorf("failed to load config from %s: %v", o.ResourceConfigPath, err)
@@ -148,7 +148,7 @@ func (o *AppsServerOptions) Complete() error {
 	return nil
 }
 
-// Validate проверяет правильность опций
+// Validate checks the correctness of the options
 func (o AppsServerOptions) Validate(args []string) error {
 	var allErrors []error
 	allErrors = append(allErrors, o.RecommendedOptions.Validate()...)
@@ -156,9 +156,9 @@ func (o AppsServerOptions) Validate(args []string) error {
 	return utilerrors.NewAggregate(allErrors)
 }
 
-// Config возвращает конфигурацию для API сервера на основе AppsServerOptions
+// Config returns the configuration for the API server based on AppsServerOptions
 func (o *AppsServerOptions) Config() (*apiserver.Config, error) {
-	// TODO: установите "реальный" внешний адрес
+	// TODO: set the "real" external address
 	if err := o.RecommendedOptions.SecureServing.MaybeDefaultWithSelfSignedCerts(
 		"localhost", o.AlternateDNS, []net.IP{netutils.ParseIPSloppy("127.0.0.1")},
 	); err != nil {
@@ -197,7 +197,7 @@ func (o *AppsServerOptions) Config() (*apiserver.Config, error) {
 	return config, nil
 }
 
-// RunAppsServer запускает новый AppsServer на основе AppsServerOptions
+// RunAppsServer launches a new AppsServer based on AppsServerOptions
 func (o AppsServerOptions) RunAppsServer(ctx context.Context) error {
 	config, err := o.Config()
 	if err != nil {
@@ -217,13 +217,13 @@ func (o AppsServerOptions) RunAppsServer(ctx context.Context) error {
 	return server.GenericAPIServer.PrepareRun().RunWithContext(ctx)
 }
 
-// AppsVersionToKubeVersion определяет соответствие версий между компонентом Apps и kube
+// AppsVersionToKubeVersion defines the version mapping between the Apps component and kube
 func AppsVersionToKubeVersion(ver *version.Version) *version.Version {
 	if ver.Major() != 1 {
 		return nil
 	}
 	kubeVer := utilversionpkg.DefaultKubeEffectiveVersion().BinaryVersion()
-	// "1.2" соответствует kubeVer
+	// "1.2" corresponds to kubeVer
 	offset := int(ver.Minor()) - 2
 	mappedVer := kubeVer.OffsetMinor(offset)
 	if mappedVer.GreaterThan(kubeVer) {
