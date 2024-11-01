@@ -21,7 +21,7 @@ import (
 
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	"k8s.io/component-base/cli"
-	"github.com/aenix.io/cozystack/cozystack-api/pkg/cmd/server"
+	"github.com/aenix.io/cozystack/pkg/cmd/server"
 )
 
 func main() {

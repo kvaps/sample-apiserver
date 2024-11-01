@@ -23,8 +23,8 @@ import (
 	"k8s.io/apiserver/pkg/storage"
 	"k8s.io/client-go/dynamic"
 
-	appsv1alpha1 "github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps/v1alpha1"
-	"github.com/aenix.io/cozystack/cozystack-api/pkg/config"
+	appsv1alpha1 "github.com/aenix.io/cozystack/pkg/apis/apps/v1alpha1"
+	"github.com/aenix.io/cozystack/pkg/config"
 )
 
 var (

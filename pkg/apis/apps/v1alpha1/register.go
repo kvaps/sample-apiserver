@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	"fmt"
 
-	"github.com/aenix.io/cozystack/cozystack-api/pkg/config"
+	"github.com/aenix.io/cozystack/pkg/config"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"

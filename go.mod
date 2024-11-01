@@ -1,6 +1,6 @@
 // This is a generated file. Do not edit directly.
 
-module github.com/aenix.io/cozystack/cozystack-api
+module github.com/aenix.io/cozystack
 
 go 1.23.0
 

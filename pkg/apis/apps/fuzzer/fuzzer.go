@@ -18,7 +18,7 @@ package fuzzer
 
 import (
 	fuzz "github.com/google/gofuzz"
-	"github.com/aenix.io/cozystack/cozystack-api/pkg/apis/apps"
+	"github.com/aenix.io/cozystack/pkg/apis/apps"
 
 	runtimeserializer "k8s.io/apimachinery/pkg/runtime/serializer"
 )

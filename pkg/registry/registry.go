@@ -1,7 +1,7 @@
 package registry
 
 import (
-	"github.com/aenix.io/cozystack/cozystack-api/pkg/registry/apps/application"
+	"github.com/aenix.io/cozystack/pkg/registry/apps/application"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	genericregistry "k8s.io/apiserver/pkg/registry/generic/registry"
 	"k8s.io/apiserver/pkg/registry/rest"
