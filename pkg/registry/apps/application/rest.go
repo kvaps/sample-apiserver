@@ -334,10 +334,25 @@ func (r *REST) Watch(ctx context.Context, options *metainternalversion.ListOptio
 
 	log.Printf("Setting up watch for HelmReleases in namespace %s with options: %v", namespace, options)
 
-	metaOptions := metav1.ListOptions{
+	listOptions := metav1.ListOptions{
 		LabelSelector: buildLabelSelector(r.releaseConfig.Labels),
 		FieldSelector: options.FieldSelector.String(),
-		Watch:         true,
+	}
+
+	list, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace(namespace).List(ctx, listOptions)
+	if err != nil {
+		log.Printf("Error listing HelmReleases for watch: %v", err)
+		return nil, err
+	}
+
+	resourceVersion := list.GetResourceVersion()
+	log.Printf("Obtained resourceVersion %s for watch", resourceVersion)
+
+	metaOptions := metav1.ListOptions{
+		LabelSelector:   buildLabelSelector(r.releaseConfig.Labels),
+		FieldSelector:   options.FieldSelector.String(),
+		Watch:           true,
+		ResourceVersion: resourceVersion,
 	}
 
 	helmWatcher, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace(namespace).Watch(ctx, metaOptions)
