@@ -15,7 +15,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/duration"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/apiserver/pkg/endpoints/request"
@@ -232,45 +231,6 @@ func (r *REST) List(ctx context.Context, options *metainternalversion.ListOption
 	return appList, nil
 }
 
-// Patch applies a patch to an Application by converting it to a HelmRelease
-func (r *REST) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, subresources ...string) (runtime.Object, error) {
-	namespace, err := r.getNamespace(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	log.Printf("Patching HelmRelease %s in namespace %s with patch type %s", name, namespace, pt)
-
-	// Construct HelmRelease name with new prefix
-	helmReleaseName := r.releaseConfig.Prefix + name
-
-	// Patch the HelmRelease
-	patchedHR, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace(namespace).Patch(ctx, helmReleaseName, pt, data, metav1.PatchOptions{}, subresources...)
-	if err != nil {
-		log.Printf("Failed to patch HelmRelease %s: %v", helmReleaseName, err)
-		return nil, fmt.Errorf("failed to patch HelmRelease: %v", err)
-	}
-
-	// Convert patched HelmRelease to Application
-	convertedApp, err := r.ConvertHelmReleaseToApplication(patchedHR)
-	if err != nil {
-		log.Printf("Conversion error from HelmRelease to Application for resource %s: %v", patchedHR.GetName(), err)
-		return nil, fmt.Errorf("conversion error: %v", err)
-	}
-
-	log.Printf("Successfully patched and converted HelmRelease %s to Application", patchedHR.GetName())
-
-	// Convert Application to unstructured format
-	unstructuredApp, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&convertedApp)
-	if err != nil {
-		log.Printf("Failed to convert Application to unstructured for resource %s: %v", convertedApp.GetName(), err)
-		return nil, fmt.Errorf("failed to convert Application to unstructured: %v", err)
-	}
-
-	log.Printf("Successfully retrieved and converted resource %s of type %s to unstructured", convertedApp.GetName(), r.gvr.Resource)
-	return &unstructured.Unstructured{Object: unstructuredApp}, nil
-}
-
 // Update updates an existing Application by converting it to a HelmRelease
 func (r *REST) Update(ctx context.Context, name string, objInfo rest.UpdatedObjectInfo, createValidation rest.ValidateObjectFunc, updateValidation rest.ValidateObjectUpdateFunc, forceAllowCreate bool, options *metav1.UpdateOptions) (runtime.Object, bool, error) {
 	// Retrieve the existing Application
@@ -331,6 +291,13 @@ func (r *REST) Update(ctx context.Context, name string, objInfo rest.UpdatedObje
 		return nil, false, fmt.Errorf("failed to convert HelmRelease to unstructured: %v", err)
 	}
 
+	metadata, found, err := unstructured.NestedMap(unstructuredHR, "metadata")
+	if err != nil || !found {
+		log.Printf("Failed to retrieve metadata from HelmRelease: %v, found: %v", err, found)
+		return nil, false, fmt.Errorf("failed to retrieve metadata from HelmRelease: %v", err)
+	}
+	log.Printf("HelmRelease Metadata: %+v", metadata)
+
 	log.Printf("Updating HelmRelease %s in namespace %s", helmRelease.Name, helmRelease.Namespace)
 
 	// Update the HelmRelease in Kubernetes
@@ -356,7 +323,8 @@ func (r *REST) Update(ctx context.Context, name string, objInfo rest.UpdatedObje
 		return nil, false, fmt.Errorf("failed to convert Application to unstructured: %v", err)
 	}
 
-	log.Printf("Successfully retrieved and converted resource %s of type %s to unstructured", convertedApp.GetName(), r.gvr.Resource)
+	log.Printf("Returning patched Application object: %+v", unstructuredApp)
+
 	return &unstructured.Unstructured{Object: unstructuredApp}, false, nil
 }
 
@@ -688,12 +656,14 @@ func (r *REST) convertHelmReleaseToApplication(hr *helmv2.HelmRelease) (appsv1al
 			Kind:       r.kindName,
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:              strings.TrimPrefix(hr.Name, r.releaseConfig.Prefix), // Remove prefix from name
+			Name:              strings.TrimPrefix(hr.Name, r.releaseConfig.Prefix),
 			Namespace:         hr.Namespace,
+			UID:               hr.GetUID(),
+			ResourceVersion:   hr.GetResourceVersion(),
 			CreationTimestamp: hr.CreationTimestamp,
 			DeletionTimestamp: hr.DeletionTimestamp,
-			Labels:            filterPrefixedMap(hr.Labels, LabelPrefix),           // Filter and remove prefix from labels
-			Annotations:       filterPrefixedMap(hr.Annotations, AnnotationPrefix), // Filter and remove prefix from annotations
+			Labels:            filterPrefixedMap(hr.Labels, LabelPrefix),
+			Annotations:       filterPrefixedMap(hr.Annotations, AnnotationPrefix),
 		},
 		Spec: hr.Spec.Values,
 		Status: appsv1alpha1.ApplicationStatus{
@@ -701,7 +671,6 @@ func (r *REST) convertHelmReleaseToApplication(hr *helmv2.HelmRelease) (appsv1al
 		},
 	}
 
-	// Convert relevant conditions
 	var conditions []metav1.Condition
 	for _, hrCondition := range hr.GetConditions() {
 		if hrCondition.Type == "Ready" || hrCondition.Type == "Released" {
@@ -726,10 +695,12 @@ func (r *REST) convertApplicationToHelmRelease(app *appsv1alpha1.Application) (*
 			Kind:       "HelmRelease",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        r.releaseConfig.Prefix + app.Name, // Add prefix to name
-			Namespace:   app.Namespace,
-			Labels:      addPrefixedMap(app.Labels, LabelPrefix),           // Add prefix to labels
-			Annotations: addPrefixedMap(app.Annotations, AnnotationPrefix), // Add prefix to annotations
+			Name:            r.releaseConfig.Prefix + app.Name,
+			Namespace:       app.Namespace,
+			Labels:          addPrefixedMap(app.Labels, LabelPrefix),
+			Annotations:     addPrefixedMap(app.Annotations, AnnotationPrefix),
+			ResourceVersion: app.ObjectMeta.ResourceVersion,
+			UID:             app.ObjectMeta.UID,
 		},
 		Spec: helmv2.HelmReleaseSpec{
 			Chart: &helmv2.HelmChartTemplate{
