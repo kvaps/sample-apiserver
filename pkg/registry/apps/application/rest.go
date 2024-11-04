@@ -13,6 +13,8 @@ import (
 	metainternalversion "k8s.io/apimachinery/pkg/apis/meta/internalversion"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	fields "k8s.io/apimachinery/pkg/fields"
+	labels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/duration"
@@ -184,21 +186,76 @@ func (r *REST) List(ctx context.Context, options *metainternalversion.ListOption
 		return nil, err
 	}
 
-	log.Printf("Attempting to list all HelmReleases in namespace %s", namespace)
+	log.Printf("Attempting to list HelmReleases in namespace %s with options: %v", namespace, options)
 
-	metaOptions := metav1.ListOptions{
-		LabelSelector: options.LabelSelector.String(),
-		FieldSelector: options.FieldSelector.String(),
+	// Get resource name from the request (if any)
+	var resourceName string
+	if requestInfo, ok := request.RequestInfoFrom(ctx); ok {
+		resourceName = requestInfo.Name
 	}
 
-	// List HelmReleases based on selectors
+	// Initialize variables for selector mapping
+	var helmFieldSelector string
+	var helmLabelSelector string
+
+	// Process field.selector
+	if options.FieldSelector != nil {
+		fs, err := fields.ParseSelector(options.FieldSelector.String())
+		if err != nil {
+			log.Printf("Invalid field selector: %v", err)
+			return nil, fmt.Errorf("invalid field selector: %v", err)
+		}
+
+		// Check if selector is for metadata.name
+		if name, exists := fs.RequiresExactMatch("metadata.name"); exists {
+			// Convert Application name to HelmRelease name
+			mappedName := r.releaseConfig.Prefix + name
+			// Create new field.selector for HelmRelease
+			helmFieldSelector = fields.OneTermEqualSelector("metadata.name", mappedName).String()
+		} else {
+			// If field.selector contains other fields, map them directly
+			helmFieldSelector = fs.String()
+		}
+	}
+
+	// Process label.selector
+	if options.LabelSelector != nil {
+		ls := options.LabelSelector.String()
+		parsedLabels, err := labels.Parse(ls)
+		if err != nil {
+			log.Printf("Invalid label selector: %v", err)
+			return nil, fmt.Errorf("invalid label selector: %v", err)
+		}
+		if !parsedLabels.Empty() {
+			reqs, _ := parsedLabels.Requirements()
+			var prefixedReqs []labels.Requirement
+			for _, req := range reqs {
+				// Add prefix to each label key
+				prefixedReq, err := labels.NewRequirement(LabelPrefix+req.Key(), req.Operator(), req.Values().List())
+				if err != nil {
+					log.Printf("Error prefixing label key: %v", err)
+					return nil, fmt.Errorf("error prefixing label key: %v", err)
+				}
+				prefixedReqs = append(prefixedReqs, *prefixedReq)
+			}
+			helmLabelSelector = labels.NewSelector().Add(prefixedReqs...).String()
+		}
+	}
+
+	// Set ListOptions for HelmRelease with selector mapping
+	metaOptions := metav1.ListOptions{
+		FieldSelector: helmFieldSelector,
+		LabelSelector: helmLabelSelector,
+	}
+
+	// List HelmReleases with mapped selectors
 	hrList, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace(namespace).List(ctx, metaOptions)
 	if err != nil {
 		log.Printf("Error listing HelmReleases: %v", err)
 		return nil, err
 	}
 
-	// Initialize an empty ApplicationList
+	// Initialize empty Application list
 	appList := &appsv1alpha1.ApplicationList{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "apps.cozystack.io/v1alpha1",
@@ -222,8 +279,43 @@ func (r *REST) List(ctx context.Context, options *metainternalversion.ListOption
 			continue
 		}
 
-		// Remove the prefix from the Application name
+		// Remove prefix from Application name
 		app.Name = strings.TrimPrefix(app.Name, r.releaseConfig.Prefix)
+
+		// If resourceName is set, check for match
+		if resourceName != "" && app.Name != resourceName {
+			continue
+		}
+
+		// Apply label.selector
+		if options.LabelSelector != nil {
+			sel, err := labels.Parse(options.LabelSelector.String())
+			if err != nil {
+				log.Printf("Invalid label selector: %v", err)
+				continue
+			}
+			if !sel.Matches(labels.Set(app.Labels)) {
+				continue
+			}
+		}
+
+		// Apply field.selector by name and namespace (if specified)
+		if options.FieldSelector != nil {
+			fs, err := fields.ParseSelector(options.FieldSelector.String())
+			if err != nil {
+				log.Printf("Invalid field selector: %v", err)
+				continue
+			}
+
+			fieldsSet := fields.Set{
+				"metadata.name":      app.Name,
+				"metadata.namespace": app.Namespace,
+			}
+			if !fs.Matches(fieldsSet) {
+				continue
+			}
+		}
+
 		appList.Items = append(appList.Items, app)
 	}
 
@@ -351,7 +443,7 @@ func (r *REST) Delete(ctx context.Context, name string, deleteValidation rest.Va
 	return nil, true, nil
 }
 
-// Watch sets up a watch on HelmReleases, filters them, and converts events to Applications
+// Watch sets up a watch on HelmReleases, filters them based on sourceRef and prefix, and converts events to Applications
 func (r *REST) Watch(ctx context.Context, options *metainternalversion.ListOptions) (watch.Interface, error) {
 	namespace, err := r.getNamespace(ctx)
 	if err != nil {
@@ -360,37 +452,76 @@ func (r *REST) Watch(ctx context.Context, options *metainternalversion.ListOptio
 
 	log.Printf("Setting up watch for HelmReleases in namespace %s with options: %v", namespace, options)
 
-	listOptions := metav1.ListOptions{
-		LabelSelector: buildLabelSelector(r.releaseConfig.Labels),
-		FieldSelector: options.FieldSelector.String(),
+	// Get request information, including resource name if specified
+	var resourceName string
+	if requestInfo, ok := request.RequestInfoFrom(ctx); ok {
+		resourceName = requestInfo.Name
 	}
 
-	// List HelmReleases to obtain the current resource version
-	list, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace(namespace).List(ctx, listOptions)
-	if err != nil {
-		log.Printf("Error listing HelmReleases for watch: %v", err)
-		return nil, err
+	// Initialize variables for selector mapping
+	var helmFieldSelector string
+	var helmLabelSelector string
+
+	// Process field.selector
+	if options.FieldSelector != nil {
+		fs, err := fields.ParseSelector(options.FieldSelector.String())
+		if err != nil {
+			log.Printf("Invalid field selector: %v", err)
+			return nil, fmt.Errorf("invalid field selector: %v", err)
+		}
+
+		// Check if selector is for metadata.name
+		if name, exists := fs.RequiresExactMatch("metadata.name"); exists {
+			// Convert Application name to HelmRelease name
+			mappedName := r.releaseConfig.Prefix + name
+			// Create new field.selector for HelmRelease
+			helmFieldSelector = fields.OneTermEqualSelector("metadata.name", mappedName).String()
+		} else {
+			// If field.selector contains other fields, map them directly
+			helmFieldSelector = fs.String()
+		}
 	}
 
-	resourceVersion := list.GetResourceVersion()
-	log.Printf("Obtained resourceVersion %s for watch", resourceVersion)
+	// Process label.selector
+	if options.LabelSelector != nil {
+		ls := options.LabelSelector.String()
+		parsedLabels, err := labels.Parse(ls)
+		if err != nil {
+			log.Printf("Invalid label selector: %v", err)
+			return nil, fmt.Errorf("invalid label selector: %v", err)
+		}
+		if !parsedLabels.Empty() {
+			reqs, _ := parsedLabels.Requirements()
+			var prefixedReqs []labels.Requirement
+			for _, req := range reqs {
+				// Add prefix to each label key
+				prefixedReq, err := labels.NewRequirement(LabelPrefix+req.Key(), req.Operator(), req.Values().List())
+				if err != nil {
+					log.Printf("Error prefixing label key: %v", err)
+					return nil, fmt.Errorf("error prefixing label key: %v", err)
+				}
+				prefixedReqs = append(prefixedReqs, *prefixedReq)
+			}
+			helmLabelSelector = labels.NewSelector().Add(prefixedReqs...).String()
+		}
+	}
 
-	// Set up watch options with the obtained resource version
+	// Set ListOptions for HelmRelease with selector mapping
 	metaOptions := metav1.ListOptions{
-		LabelSelector:   buildLabelSelector(r.releaseConfig.Labels),
-		FieldSelector:   options.FieldSelector.String(),
 		Watch:           true,
-		ResourceVersion: resourceVersion,
+		ResourceVersion: options.ResourceVersion,
+		FieldSelector:   helmFieldSelector,
+		LabelSelector:   helmLabelSelector,
 	}
 
-	// Start watching HelmReleases
+	// Start watch on HelmRelease with mapped selectors
 	helmWatcher, err := r.dynamicClient.Resource(helmReleaseGVR).Namespace(namespace).Watch(ctx, metaOptions)
 	if err != nil {
 		log.Printf("Error setting up watch for HelmReleases: %v", err)
 		return nil, err
 	}
 
-	// Create a custom watcher to handle event filtering and conversion
+	// Create a custom watcher to transform events
 	customW := &customWatcher{
 		resultChan: make(chan watch.Event),
 		stopChan:   make(chan struct{}),
@@ -405,7 +536,7 @@ func (r *REST) Watch(ctx context.Context, options *metainternalversion.ListOptio
 					return
 				}
 
-				// Check if the HelmRelease event is relevant based on filtering criteria
+				// Check if the HelmRelease is relevant (based on sourceRef and prefix)
 				matches, err := r.isRelevantHelmRelease(&event)
 				if err != nil {
 					log.Printf("Error filtering HelmRelease event: %v", err)
@@ -423,19 +554,37 @@ func (r *REST) Watch(ctx context.Context, options *metainternalversion.ListOptio
 					continue
 				}
 
-				// Convert Application to unstructured format
+				// Apply field.selector by name if specified
+				if resourceName != "" && app.Name != resourceName {
+					continue
+				}
+
+				// Apply label.selector
+				if options.LabelSelector != nil {
+					sel, err := labels.Parse(options.LabelSelector.String())
+					if err != nil {
+						log.Printf("Invalid label selector: %v", err)
+						continue
+					}
+					if !sel.Matches(labels.Set(app.Labels)) {
+						continue
+					}
+				}
+
+				// Convert Application to unstructured
 				unstructuredApp, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&app)
 				if err != nil {
 					log.Printf("Failed to convert Application to unstructured: %v", err)
 					continue
 				}
 
-				// Create a new watch event with the Application object
+				// Create watch event with Application object
 				appEvent := watch.Event{
 					Type:   event.Type,
 					Object: &unstructured.Unstructured{Object: unstructuredApp},
 				}
 
+				// Send event to custom watcher
 				select {
 				case customW.resultChan <- appEvent:
 				case <-customW.stopChan:
@@ -454,6 +603,14 @@ func (r *REST) Watch(ctx context.Context, options *metainternalversion.ListOptio
 
 	log.Printf("Custom watch established successfully")
 	return customW, nil
+}
+
+// Helper function to get HelmRelease name from object
+func helmReleaseName(obj runtime.Object) string {
+	if u, ok := obj.(*unstructured.Unstructured); ok {
+		return u.GetName()
+	}
+	return "<unknown>"
 }
 
 // customWatcher wraps the original watcher and filters/converts events
@@ -475,7 +632,7 @@ func (cw *customWatcher) ResultChan() <-chan watch.Event {
 	return cw.resultChan
 }
 
-// isRelevantHelmRelease checks if the HelmRelease meets the specified criteria
+// isRelevantHelmRelease checks if the HelmRelease meets the sourceRef and prefix criteria
 func (r *REST) isRelevantHelmRelease(event *watch.Event) (bool, error) {
 	if event.Object == nil {
 		return false, nil
@@ -486,18 +643,7 @@ func (r *REST) isRelevantHelmRelease(event *watch.Event) (bool, error) {
 		return false, fmt.Errorf("expected Unstructured object, got %T", event.Object)
 	}
 
-	// Filter by Chart Name
-	chartName, found, err := unstructured.NestedString(hr.Object, "spec", "chart", "spec", "chart")
-	if err != nil || !found {
-		log.Printf("HelmRelease %s missing spec.chart.spec.chart field: %v", hr.GetName(), err)
-		return false, nil
-	}
-	if chartName != r.releaseConfig.Chart.Name {
-		return false, nil
-	}
-
-	// Filter by SourceRefConfig and Prefix
-	return r.matchesSourceRefAndPrefix(hr), nil
+	return r.shouldIncludeHelmRelease(hr), nil
 }
 
 // shouldIncludeHelmRelease determines if a HelmRelease should be included based on filtering criteria
