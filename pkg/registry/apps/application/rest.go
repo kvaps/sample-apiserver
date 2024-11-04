@@ -283,9 +283,6 @@ func (r *REST) List(ctx context.Context, options *metainternalversion.ListOption
 			continue
 		}
 
-		// Remove prefix from Application name
-		app.Name = strings.TrimPrefix(app.Name, r.releaseConfig.Prefix)
-
 		// If resourceName is set, check for match
 		if resourceName != "" && app.Name != resourceName {
 			continue
@@ -911,8 +908,10 @@ func (r *REST) ConvertToTable(ctx context.Context, object runtime.Object, tableO
 	switch obj := object.(type) {
 	case *appsv1alpha1.ApplicationList:
 		table = r.buildTableFromApplications(obj.Items)
+		table.ListMeta.ResourceVersion = obj.ListMeta.ResourceVersion
 	case *appsv1alpha1.Application:
 		table = r.buildTableFromApplication(*obj)
+		table.ListMeta.ResourceVersion = obj.GetResourceVersion()
 	case *unstructured.Unstructured:
 		var app appsv1alpha1.Application
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.UnstructuredContent(), &app)
@@ -921,6 +920,7 @@ func (r *REST) ConvertToTable(ctx context.Context, object runtime.Object, tableO
 			return nil, fmt.Errorf("failed to convert Unstructured to Application: %v", err)
 		}
 		table = r.buildTableFromApplication(app)
+		table.ListMeta.ResourceVersion = obj.GetResourceVersion()
 	default:
 		resource := schema.GroupResource{}
 		if info, ok := request.RequestInfoFrom(ctx); ok {
@@ -957,9 +957,6 @@ func (r *REST) buildTableFromApplications(apps []appsv1alpha1.Application) metav
 			{Name: "VERSION", Type: "string", Description: "Version of the Application", Priority: 0},
 		},
 		Rows: make([]metav1.TableRow, 0, len(apps)),
-		ListMeta: metav1.ListMeta{
-			ResourceVersion: "", // To be set by the caller if needed
-		},
 	}
 	now := time.Now()
 
@@ -969,10 +966,6 @@ func (r *REST) buildTableFromApplications(apps []appsv1alpha1.Application) metav
 			Object: runtime.RawExtension{Object: &app},
 		}
 		table.Rows = append(table.Rows, row)
-	}
-
-	table.ListMeta = metav1.ListMeta{
-		ResourceVersion: "", // To be set by the caller if needed
 	}
 
 	return table
@@ -988,9 +981,6 @@ func (r *REST) buildTableFromApplication(app appsv1alpha1.Application) metav1.Ta
 			{Name: "VERSION", Type: "string", Description: "Version of the Application", Priority: 0},
 		},
 		Rows: []metav1.TableRow{},
-		ListMeta: metav1.ListMeta{
-			ResourceVersion: "", // To be set by the caller if needed
-		},
 	}
 	now := time.Now()
 
@@ -999,10 +989,6 @@ func (r *REST) buildTableFromApplication(app appsv1alpha1.Application) metav1.Ta
 		Object: runtime.RawExtension{Object: &app},
 	}
 	table.Rows = append(table.Rows, row)
-
-	table.ListMeta = metav1.ListMeta{
-		ResourceVersion: "", // To be set by the caller if needed
-	}
 
 	return table
 }
